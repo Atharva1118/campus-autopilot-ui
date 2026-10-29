@@ -1,0 +1,33 @@
+:root{
+  --ink:#1d2a2e; --muted:#5d6c70; --paper:#f3f6f5; --panel:#ffffff;
+  --line:#cfdad7; --accent:#0f6b5c; --accent-ink:#ffffff; --danger:#b3261e; --ok:#0f6b5c;
+}
+@media (prefers-color-scheme:dark){
+  :root{--ink:#e6efed;--muted:#9bb0ab;--paper:#12191a;--panel:#1a2325;--line:#2f3f41;--accent:#4fc3ad;--accent-ink:#0b1514;--danger:#ff8a80;--ok:#4fc3ad}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+.shell{max-width:560px;margin:0 auto;padding:24px 16px 48px}
+.masthead h1{margin:8px 0 4px;font-size:1.75rem;letter-spacing:-.01em}
+.masthead p{margin:0 0 20px;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px}
+.field{margin:0 0 16px;padding:0;border:0;min-width:0}
+label,legend{display:block;font-weight:600;font-size:.95rem;margin-bottom:6px;padding:0}
+input[type=text],textarea,select{width:100%;font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-height:44px}
+select:disabled{opacity:.55;cursor:not-allowed}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,.segmented input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.segmented{display:flex;gap:8px;flex-wrap:wrap}
+.segmented label{flex:1 1 150px;margin:0}
+.segmented input{position:absolute;opacity:0;pointer-events:none}
+.segmented span{display:block;text-align:center;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-weight:500;cursor:pointer}
+.segmented input:checked+span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.classroom{border-left:3px solid var(--accent);padding-left:14px;margin-bottom:16px}
+.classroom[hidden]{display:none}
+.hint{margin:6px 0 0;font-size:.88rem;color:var(--muted)}
+.hint:empty,.error:empty,.status:empty{display:none}
+.error{margin:6px 0 0;font-size:.88rem;color:var(--danger)}
+.invalid{border-color:var(--danger)!important}
+button[type=submit]{width:100%;min-height:46px;font:inherit;font-weight:600;color:var(--accent-ink);background:var(--accent);border:0;border-radius:6px;cursor:pointer}
+button[type=submit]:disabled{opacity:.6;cursor:wait}
+.status{margin:12px 0 0;font-size:.95rem}
+.status.ok{color:var(--ok)} .status.fail{color:var(--danger)}
