@@ -1,11 +1,7 @@
-
-
 /* =========================================
-   CAMPUS AUTOPILOT — MAIN STYLESHEET
-   File: style.css
+   CAMPUS AUTOPILOT
+   Main Stylesheet — Part 1 of 3
 ========================================= */
-
-/* ---------- 1. Reset & Variables ---------- */
 
 :root {
   --primary: #4f46e5;
@@ -75,7 +71,7 @@ img {
   max-width: 100%;
 }
 
-/* ---------- 2. General Layout ---------- */
+/* GENERAL LAYOUT */
 
 .app-container {
   min-height: 100vh;
@@ -95,12 +91,12 @@ img {
 }
 
 .page-section {
-  display: none;
+  display: block;
   animation: fadeIn 0.25s ease;
 }
 
-.page-section.active {
-  display: block;
+.page-section.hidden {
+  display: none !important;
 }
 
 .hidden {
@@ -112,14 +108,13 @@ img {
     opacity: 0;
     transform: translateY(5px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ---------- 3. Sidebar ---------- */
+/* SIDEBAR */
 
 .sidebar {
   position: fixed;
@@ -228,7 +223,7 @@ img {
   font-size: 11px;
 }
 
-/* ---------- 4. Top Header ---------- */
+/* TOP HEADER */
 
 .topbar,
 .page-header {
@@ -286,7 +281,7 @@ img {
   font-weight: 800;
 }
 
-/* ---------- 5. Cards ---------- */
+/* CARDS */
 
 .card,
 .stat-card,
@@ -384,7 +379,7 @@ img {
   margin-bottom: 25px;
 }
 
-/* ---------- 6. Forms ---------- */
+/* FORMS */
 
 .form-container {
   max-width: 1000px;
@@ -493,7 +488,7 @@ textarea:disabled {
   margin-top: 8px;
 }
 
-/* ---------- 7. Buttons ---------- */
+/* BUTTONS */
 
 .btn,
 button.btn {
@@ -561,7 +556,7 @@ button.btn {
   width: 100%;
 }
 
-/* ---------- 8. Status Messages ---------- */
+/* STATUS MESSAGES */
 
 .form-status,
 #announcementStatus,
@@ -613,7 +608,9 @@ button.btn {
   color: var(--warning);
 }
 
-/* ---------- 9. Tables & History ---------- */
+
+
+/* TABLES & HISTORY */
 
 .table-container {
   width: 100%;
@@ -683,9 +680,11 @@ tbody tr:hover {
   padding: 38px 20px;
   color: var(--text-secondary);
   text-align: center;
+  white-space: normal;
 }
 
 .empty-state-icon {
+  display: block;
   margin-bottom: 10px;
   font-size: 30px;
 }
@@ -696,7 +695,7 @@ tbody tr:hover {
   font-size: 15px;
 }
 
-/* ---------- 10. Status Badges ---------- */
+/* STATUS BADGES */
 
 .status-badge,
 .badge {
@@ -729,7 +728,7 @@ tbody tr:hover {
   color: var(--primary);
 }
 
-/* ---------- 11. Activity & Lists ---------- */
+/* ACTIVITY LIST */
 
 .activity-list {
   display: flex;
@@ -778,7 +777,7 @@ tbody tr:hover {
   overflow-wrap: anywhere;
 }
 
-/* ---------- 12. Settings ---------- */
+/* SETTINGS */
 
 .settings-section {
   margin-bottom: 24px;
@@ -812,7 +811,7 @@ tbody tr:hover {
   margin-bottom: 4px;
 }
 
-/* ---------- 13. Calendar & Event Elements ---------- */
+/* EVENT LIST */
 
 .event-list {
   display: flex;
@@ -869,7 +868,7 @@ tbody tr:hover {
   font-size: 11px;
 }
 
-/* ---------- 14. Overlay ---------- */
+/* MOBILE SIDEBAR OVERLAY */
 
 #sidebarOverlay,
 .sidebar-overlay {
@@ -886,7 +885,7 @@ tbody tr:hover {
   display: block;
 }
 
-/* ---------- 15. Scrollbar ---------- */
+/* SCROLLBARS */
 
 .sidebar::-webkit-scrollbar,
 .table-container::-webkit-scrollbar {
@@ -904,7 +903,7 @@ tbody tr:hover {
   background: #374151;
 }
 
-/* ---------- 16. Responsive: Tablets ---------- */
+/* TABLETS */
 
 @media (max-width: 1200px) {
   .card-grid,
@@ -921,13 +920,9 @@ tbody tr:hover {
   }
 }
 
-/* ---------- 17. Responsive: Mobile ---------- */
+/* MOBILE */
 
 @media (max-width: 768px) {
-  :root {
-    --sidebar-width: 255px;
-  }
-
   .sidebar {
     transform: translateX(-100%);
     box-shadow: none;
@@ -991,7 +986,7 @@ tbody tr:hover {
   }
 }
 
-/* ---------- 18. Responsive: Small Phones ---------- */
+/* SMALL PHONES */
 
 @media (max-width: 480px) {
   .card-grid,
@@ -1026,10 +1021,6 @@ tbody tr:hover {
     width: 100%;
   }
 
-  .btn {
-    max-width: 100%;
-  }
-
   .card-header,
   .panel-header {
     align-items: flex-start;
@@ -1041,7 +1032,7 @@ tbody tr:hover {
   }
 }
 
-/* ---------- 19. Accessibility ---------- */
+/* ACCESSIBILITY */
 
 button:focus-visible,
 a:focus-visible,
@@ -1061,4 +1052,5 @@ textarea:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
+   }
+
