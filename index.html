@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Autopilot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <h1>Campus Autopilot</h1>
+      <p>Send an announcement to every student or to a single classroom.</p>
+    </header>
+
+    <form id="announcementForm" class="panel" novalidate>
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" maxlength="120" autocomplete="off">
+        <p class="error" id="titleError" role="alert"></p>
+      </div>
+
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="4"></textarea>
+        <p class="error" id="messageError" role="alert"></p>
+      </div>
+
+      <fieldset class="field">
+        <legend>Send to</legend>
+        <div class="segmented">
+          <label><input type="radio" name="recipientType" value="all_students" checked><span>All Students</span></label>
+          <label><input type="radio" name="recipientType" value="classroom"><span>Specific Classroom</span></label>
+        </div>
+      </fieldset>
+
+      <div id="classroomFields" class="classroom" hidden>
+        <div class="field">
+          <label for="academicYear">Academic Year</label>
+          <select id="academicYear" name="academicYear"></select>
+          <p class="error" id="academicYearError" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="branch">Branch</label>
+          <select id="branch" name="branch" disabled></select>
+          <p class="error" id="branchError" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label for="division">Division</label>
+          <select id="division" name="division" disabled></select>
+          <p class="hint" id="divisionHint"></p>
+          <p class="error" id="divisionError" role="alert"></p>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn">Send announcement</button>
+      <p class="status" id="formStatus" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
