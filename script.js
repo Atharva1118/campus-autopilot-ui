@@ -18,10 +18,7 @@ const STORAGE_KEYS = {
 const DEFAULT_WEBHOOK_URL =
   "https://campus-autopilot.app.n8n.cloud/webhook/c494a389-57d5-4e97-84c1-dc37fdbca64e";
 
-// Production mode: real workflow execution.
-// Actual email delivery still depends on n8n authorization.
 const SEND_MODE = "production";
-
 const TIMEZONE = "Asia/Kolkata";
 
 const DIVISION_MAPPING = {
@@ -95,6 +92,8 @@ const divisionSelect = $("division");
 const webhookInput = $("announcementWebhook");
 const submitButton = $("submitButton");
 const statusBox = $("announcementStatus");
+
+let isSubmitting = false;
 
 /* =========================================================
    3. STATUS MESSAGES
@@ -238,8 +237,7 @@ function updateCounter(input, counterId, max) {
   const counter = $(counterId);
 
   if (input && counter) {
-    counter.textContent =
-      `${input.value.length} / ${max}`;
+    counter.textContent = `${input.value.length} / ${max}`;
   }
 }
 
@@ -295,9 +293,6 @@ function updatePreview() {
 /* =========================================================
    9. WEBHOOK CONFIGURATION
    ========================================================= */
-
-// Always use the production webhook.
-// Do not allow a previously saved test URL to override it.
 
 function getWebhookUrl() {
   return DEFAULT_WEBHOOK_URL;
@@ -505,6 +500,8 @@ function buildPayload() {
 async function publishNotice(event) {
   event.preventDefault();
 
+  if (isSubmitting) return;
+
   clearStatus();
 
   const validationMessage = validateForm();
@@ -521,6 +518,7 @@ async function publishNotice(event) {
 
   const originalButtonText = submitButton.innerHTML;
 
+  isSubmitting = true;
   submitButton.disabled = true;
 
   submitButton.innerHTML =
@@ -536,25 +534,41 @@ async function publishNotice(event) {
 
     console.log("Campus Autopilot payload:", payload);
 
-    const response = await fetch(getWebhookUrl(), {
-      method: "POST",
-      mode: "cors",
+    let response;
 
-      headers: {
-        "Content-Type": "text/plain;charset=UTF-8"
-      },
+    try {
+      response = await fetch(getWebhookUrl(), {
+        method: "POST",
+        mode: "cors",
 
-      body: JSON.stringify(payload)
-    });
+        headers: {
+          "Content-Type": "text/plain;charset=UTF-8"
+        },
+
+        body: JSON.stringify(payload)
+      });
+
+    } catch (networkError) {
+      console.error(
+        "Webhook network/CORS error:",
+        networkError
+      );
+
+      throw new Error(
+        "Browser could not receive a response from n8n. " +
+        "Check the production webhook execution and CORS response headers."
+      );
+    }
 
     const responseText = await response.text();
 
+    console.log("n8n HTTP status:", response.status);
+    console.log("n8n response:", responseText);
+
     if (!response.ok) {
       throw new Error(
-        `n8n returned HTTP ${response.status}` +
-        (responseText
-          ? `: ${responseText.slice(0, 250)}`
-          : "")
+        `n8n returned HTTP ${response.status}. ` +
+        responseText.slice(0, 250)
       );
     }
 
@@ -566,19 +580,24 @@ async function publishNotice(event) {
         : {};
 
     } catch {
-      // Accept a plain-text response.
+      // Plain text responses are also accepted.
     }
 
-    console.log("n8n webhook response:", result);
-
-    if (result && result.success === false) {
+    if (
+      result &&
+      typeof result === "object" &&
+      result.success === false
+    ) {
       throw new Error(
-        result.message || "n8n rejected the announcement."
+        result.message ||
+        "n8n rejected the announcement."
       );
     }
 
     setStatus(
-      "Announcement accepted by n8n. Check the workflow execution and Gmail node to verify actual student email delivery.",
+      "Announcement request received by n8n. " +
+      "This does not confirm student email delivery. " +
+      "Check faculty approval and the Gmail execution result.",
       "success"
     );
 
@@ -588,12 +607,12 @@ async function publishNotice(event) {
     setStatus(
       "Could not submit the announcement. " +
       (error.message ||
-        "Check your internet connection and n8n webhook configuration.") +
-      " Inspect the POST request and n8n execution for details.",
+        "Check your internet connection and n8n webhook configuration."),
       "error"
     );
 
   } finally {
+    isSubmitting = false;
     submitButton.disabled = false;
     submitButton.innerHTML = originalButtonText;
   }
@@ -627,7 +646,7 @@ function initialize() {
     return;
   }
 
-  // Remove any previously saved test webhook URL.
+  // Force the configured production webhook URL.
   localStorage.setItem(
     STORAGE_KEYS.announcementWebhook,
     DEFAULT_WEBHOOK_URL
