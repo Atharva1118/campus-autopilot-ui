@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,197 +6,557 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#10152b">
   <meta name="description" content="Campus Autopilot - Upload and distribute campus notices.">
+
   <title>Upload Notice | Campus Autopilot</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
+
   <script src="script.js" defer></script>
 </head>
+
 <body>
+
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
 
   <div class="app-shell">
+
     <aside class="sidebar">
+
       <a class="brand" href="#" aria-label="Campus Autopilot home">
-        <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 4l9 6.5M5.5 9.5V20h13V9.5M9 20v-6h6v6M8 10h.01M16 10h.01"/></svg></span>
-        <span><strong>campus<span>autopilot</span></strong><small>SMART CAMPUS PLATFORM</small></span>
+
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 10.5 12 4l9 6.5M5.5 9.5V20h13V9.5M9 20v-6h6v6M8 10h.01M16 10h.01"/>
+          </svg>
+        </span>
+
+        <span>
+          <strong>campus<span>autopilot</span></strong>
+          <small>SMART CAMPUS PLATFORM</small>
+        </span>
+
       </a>
 
       <div class="sidebar-label">WORKSPACE</div>
+
       <nav class="sidebar-nav" aria-label="Main navigation">
+
         <a class="nav-item active" href="#upload" aria-current="page">
-          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5"/></svg></span>
-          <span>Upload Notice</span><span class="nav-arrow">↗</span>
+
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5"/>
+            </svg>
+          </span>
+
+          <span>Upload Notice</span>
+          <span class="nav-arrow">↗</span>
+
         </a>
+
       </nav>
 
       <div class="sidebar-bottom">
+
         <div class="secure-card">
           <span class="secure-icon">✦</span>
+
           <strong>Campus communication, simplified.</strong>
+
           <p>Send the right update to the right students at the right time.</p>
         </div>
-        <div class="sidebar-foot"><span class="status-dot"></span> System workspace</div>
+
+        <div class="sidebar-foot">
+          <span class="status-dot"></span>
+          System workspace
+        </div>
+
       </div>
+
     </aside>
 
     <main class="main-content" id="upload">
+
       <header class="topbar">
+
         <div>
           <div class="breadcrumb">Workspace <span>/</span> Notices</div>
           <h1>Upload Notice</h1>
         </div>
+
         <div class="topbar-right">
-          <span class="live-pill"><span class="status-dot"></span> Ready to publish</span>
+
+          <span class="live-pill">
+            <span class="status-dot"></span>
+            Ready to publish
+          </span>
+
           <div class="avatar">CA</div>
+
         </div>
+
       </header>
 
       <section class="welcome-panel">
+
         <div class="welcome-copy">
-          <div class="eyebrow"><span class="sparkle">✦</span> NOTICE MANAGEMENT</div>
-          <h2>Make every update<br><span>reach the right people.</span></h2>
-          <p>Create a campus notice and choose exactly who should receive it. Your announcement will be sent through the connected automation workflow.</p>
-        </div>
-        <div class="welcome-art" aria-hidden="true">
-          <div class="art-orbit orbit-a"></div><div class="art-orbit orbit-b"></div>
-          <div class="art-card">
-            <div class="art-card-top"><span class="art-dot"></span><span class="art-dot"></span><span class="art-dot"></span></div>
-            <div class="art-paper"><span></span><span></span><span class="short"></span><div class="art-bell">✦</div></div>
+
+          <div class="eyebrow">
+            <span class="sparkle">✦</span>
+            NOTICE MANAGEMENT
           </div>
-          <div class="art-bubble bubble-one">↗</div><div class="art-bubble bubble-two">✉</div>
+
+          <h2>
+            Make every update<br>
+            <span>reach the right people.</span>
+          </h2>
+
+          <p>
+            Create a campus notice and choose exactly who should receive it.
+            Your announcement will be sent through the connected automation workflow.
+          </p>
+
         </div>
+
+        <div class="welcome-art" aria-hidden="true">
+
+          <div class="art-orbit orbit-a"></div>
+          <div class="art-orbit orbit-b"></div>
+
+          <div class="art-card">
+
+            <div class="art-card-top">
+              <span class="art-dot"></span>
+              <span class="art-dot"></span>
+              <span class="art-dot"></span>
+            </div>
+
+            <div class="art-paper">
+              <span></span>
+              <span></span>
+              <span class="short"></span>
+              <div class="art-bell">✦</div>
+            </div>
+
+          </div>
+
+          <div class="art-bubble bubble-one">↗</div>
+          <div class="art-bubble bubble-two">✉</div>
+
+        </div>
+
       </section>
 
       <div class="content-grid">
+
         <section class="form-panel">
+
           <div class="panel-heading">
+
             <div class="heading-icon">✎</div>
-            <div><h3>Notice details</h3><p>Write the message you want to share with students.</p></div>
+
+            <div>
+              <h3>Notice details</h3>
+              <p>Write the message you want to share with students.</p>
+            </div>
+
             <span class="step-label">STEP 01</span>
+
           </div>
 
           <form id="announcementForm" novalidate>
+
             <div class="field">
-              <label for="announcementTitle">Notice title <span class="required">*</span></label>
-              <input id="announcementTitle" name="title" type="text" maxlength="120" placeholder="e.g. Important update regarding examinations" required>
-              <div class="field-meta"><span>Keep it clear and easy to understand.</span><span id="titleCount">0 / 120</span></div>
+
+              <label for="announcementTitle">
+                Notice title <span class="required">*</span>
+              </label>
+
+              <input
+                id="announcementTitle"
+                name="title"
+                type="text"
+                maxlength="120"
+                placeholder="e.g. Important update regarding examinations"
+                required
+              >
+
+              <div class="field-meta">
+                <span>Keep it clear and easy to understand.</span>
+                <span id="titleCount">0 / 120</span>
+              </div>
+
             </div>
 
             <div class="field">
-              <label for="announcementMessage">Notice message <span class="required">*</span></label>
-              <textarea id="announcementMessage" name="message" rows="7" maxlength="5000" placeholder="Write your notice here. Include all important details, dates, instructions, and any action students need to take..." required></textarea>
-              <div class="field-meta"><span>Use paragraphs to make longer notices easier to read.</span><span id="messageCount">0 / 5000</span></div>
+
+              <label for="announcementMessage">
+                Notice message <span class="required">*</span>
+              </label>
+
+              <textarea
+                id="announcementMessage"
+                name="message"
+                rows="7"
+                maxlength="5000"
+                placeholder="Write your notice here. Include all important details, dates, instructions, and any action students need to take..."
+                required
+              ></textarea>
+
+              <div class="field-meta">
+                <span>Use paragraphs to make longer notices easier to read.</span>
+                <span id="messageCount">0 / 5000</span>
+              </div>
+
             </div>
 
             <div class="section-divider"></div>
+
             <div class="panel-heading compact">
+
               <div class="heading-icon audience-icon">◎</div>
-              <div><h3>Choose your audience</h3><p>Decide which students should receive this notice.</p></div>
+
+              <div>
+                <h3>Choose your audience</h3>
+                <p>Decide which students should receive this notice.</p>
+              </div>
+
               <span class="step-label">STEP 02</span>
+
             </div>
 
             <div class="audience-options">
+
               <label class="audience-option selected" id="allStudentsCard">
-                <input type="radio" name="recipientType" value="all" checked>
+
+                <input
+                  type="radio"
+                  name="recipientType"
+                  value="all"
+                  checked
+                >
+
                 <span class="option-symbol">◉</span>
-                <span class="option-copy"><strong>All Students</strong><small>Send to every student in the college.</small></span>
+
+                <span class="option-copy">
+                  <strong>All Students</strong>
+                  <small>Send to every student in the college.</small>
+                </span>
+
                 <span class="radio-indicator"></span>
+
               </label>
+
               <label class="audience-option" id="classroomCard">
-                <input type="radio" name="recipientType" value="classroom">
+
+                <input
+                  type="radio"
+                  name="recipientType"
+                  value="classroom"
+                >
+
                 <span class="option-symbol">▦</span>
-                <span class="option-copy"><strong>Specific Classroom</strong><small>Target a year, branch, and division.</small></span>
+
+                <span class="option-copy">
+                  <strong>Specific Classroom</strong>
+                  <small>Target a year, branch, and division.</small>
+                </span>
+
                 <span class="radio-indicator"></span>
+
               </label>
+
             </div>
 
             <div id="classroomFields" class="classroom-fields" hidden>
-              <div class="classroom-intro"><span>⌖</span><div><strong>Classroom targeting</strong><small>Select the exact student group for this notice.</small></div></div>
-              <div class="select-grid">
-                <div class="field">
-                  <label for="academicYear">Academic year <span class="required">*</span></label>
-                  <select id="academicYear" name="academicYear">
-                    <option value="">Select year</option>
-                    <option value="FY">First Year (FY)</option>
-                    <option value="SY">Second Year (SY)</option>
-                    <option value="TY">Third Year (TY)</option>
-                    <option value="Final Year">Fourth Year (Final Year)</option>
-                  </select>
+
+              <div class="classroom-intro">
+
+                <span>⌖</span>
+
+                <div>
+                  <strong>Classroom targeting</strong>
+                  <small>Select the exact student group for this notice.</small>
                 </div>
+
+              </div>
+
+              <div class="select-grid">
+
                 <div class="field">
-                  <label for="branch">Branch <span class="required">*</span></label>
+
+                  <label for="academicYear">
+                    Academic year <span class="required">*</span>
+                  </label>
+
+                  <select id="academicYear" name="academicYear">
+
+                    <option value="">Select year</option>
+
+                    <option value="FY" data-year-number="1">
+                      First Year (FY)
+                    </option>
+
+                    <option value="SY" data-year-number="2">
+                      Second Year (SY)
+                    </option>
+
+                    <option value="TY" data-year-number="3">
+                      Third Year (TY)
+                    </option>
+
+                    <option value="Final Year" data-year-number="4">
+                      Fourth Year (Final Year)
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <div class="field">
+
+                  <label for="branch">
+                    Branch <span class="required">*</span>
+                  </label>
+
                   <select id="branch" name="branch" disabled>
                     <option value="">Select branch</option>
                   </select>
+
                 </div>
+
                 <div class="field division-field">
-                  <label for="division">Division <span class="required">*</span></label>
+
+                  <label for="division">
+                    Division <span class="required">*</span>
+                  </label>
+
                   <select id="division" name="division" disabled>
                     <option value="">Select division</option>
                   </select>
-                  <small id="divisionHelp" class="help-text">Choose year and branch first.</small>
+
+                  <small id="divisionHelp" class="help-text">
+                    Choose year and branch first.
+                  </small>
+
                 </div>
+
               </div>
+
             </div>
 
             <div class="section-divider"></div>
+
             <div class="panel-heading compact">
+
               <div class="heading-icon schedule-icon">◷</div>
-              <div><h3>Publishing schedule</h3><p>Publish now or set a date and time for later.</p></div>
+
+              <div>
+                <h3>Publishing schedule</h3>
+                <p>Publish now or set a date and time for later.</p>
+              </div>
+
               <span class="step-label">STEP 03</span>
+
             </div>
+
             <div class="schedule-grid">
+
               <div class="field">
-                <label for="announcementDate">Schedule date <span class="optional">OPTIONAL</span></label>
-                <input id="announcementDate" name="scheduledDate" type="date">
+
+                <label for="announcementDate">
+                  Schedule date <span class="optional">OPTIONAL</span>
+                </label>
+
+                <input
+                  id="announcementDate"
+                  name="scheduledDate"
+                  type="date"
+                >
+
               </div>
+
               <div class="field">
-                <label for="announcementTime">Schedule time <span class="optional">OPTIONAL</span></label>
-                <input id="announcementTime" name="scheduledTime" type="time">
+
+                <label for="announcementTime">
+                  Schedule time <span class="optional">OPTIONAL</span>
+                </label>
+
+                <input
+                  id="announcementTime"
+                  name="scheduledTime"
+                  type="time"
+                >
+
               </div>
+
             </div>
-            <p class="schedule-note"><span>ⓘ</span> Leave both fields empty to publish immediately. If scheduling, select both date and time.</p>
+
+            <p class="schedule-note">
+              <span>ⓘ</span>
+              Leave both fields empty to publish immediately.
+              If scheduling, select both date and time.
+            </p>
 
             <div class="form-actions">
-              <button type="reset" class="button button-quiet" id="resetButton">Clear form</button>
-              <button type="submit" class="button button-primary" id="submitButton"><span>Publish notice</span><span class="button-arrow">↗</span></button>
+
+              <button type="reset" class="button button-quiet" id="resetButton">
+                Clear form
+              </button>
+
+              <button type="submit" class="button button-primary" id="submitButton">
+                <span>Publish notice</span>
+                <span class="button-arrow">↗</span>
+              </button>
+
             </div>
-            <div id="announcementStatus" class="form-status" role="status" aria-live="polite" hidden></div>
+
+            <div
+              id="announcementStatus"
+              class="form-status"
+              role="status"
+              aria-live="polite"
+              hidden
+            ></div>
+
           </form>
+
         </section>
 
         <aside class="side-column">
+
           <section class="side-card preview-card">
-            <div class="side-card-heading"><span class="mini-icon">▤</span><h3>Live preview</h3><span class="preview-tag">PREVIEW</span></div>
-            <div class="preview-notice">
-              <div class="preview-topline"><span class="preview-brand"><span class="tiny-mark">✦</span> CAMPUS NOTICE</span><span class="preview-date" id="previewDate">Today</span></div>
-              <h4 id="previewTitle">Your notice title appears here</h4>
-              <p id="previewMessage">Your notice message will appear here. Add the details students need to know.</p>
-              <div class="preview-audience"><span>◎</span><span id="previewAudience">All Students</span></div>
+
+            <div class="side-card-heading">
+
+              <span class="mini-icon">▤</span>
+              <h3>Live preview</h3>
+              <span class="preview-tag">PREVIEW</span>
+
             </div>
-            <p class="preview-caption">This is a quick preview of the notice content.</p>
+
+            <div class="preview-notice">
+
+              <div class="preview-topline">
+
+                <span class="preview-brand">
+                  <span class="tiny-mark">✦</span>
+                  CAMPUS NOTICE
+                </span>
+
+                <span class="preview-date" id="previewDate">Today</span>
+
+              </div>
+
+              <h4 id="previewTitle">Your notice title appears here</h4>
+
+              <p id="previewMessage">
+                Your notice message will appear here.
+                Add the details students need to know.
+              </p>
+
+              <div class="preview-audience">
+                <span>◎</span>
+                <span id="previewAudience">All Students</span>
+              </div>
+
+            </div>
+
+            <p class="preview-caption">
+              This is a quick preview of the notice content.
+            </p>
+
           </section>
 
           <section class="side-card webhook-card">
-            <div class="side-card-heading"><span class="mini-icon webhook-icon">⌁</span><h3>Automation connection</h3></div>
-            <p class="side-description">Connect your n8n announcement webhook to deliver notices through your configured workflow.</p>
-            <div class="field webhook-field">
-              <label for="announcementWebhook">Announcement webhook URL</label>
-              <input id="announcementWebhook" type="url" placeholder="https://your-n8n-domain/webhook/..." autocomplete="url">
+
+            <div class="side-card-heading">
+
+              <span class="mini-icon webhook-icon">⌁</span>
+              <h3>Automation connection</h3>
+
             </div>
-            <button type="button" class="button button-outline" id="saveWebhookButton">Save connection <span>↗</span></button>
-            <div id="webhookStatus" class="small-status" role="status" aria-live="polite"></div>
-            <div class="privacy-note"><span>♢</span> Stored in this browser only. Avoid sharing this device with others if the URL is sensitive.</div>
+
+            <p class="side-description">
+              Connect your n8n announcement webhook to deliver notices
+              through your configured workflow.
+            </p>
+
+            <div class="field webhook-field">
+
+              <label for="announcementWebhook">
+                Announcement webhook URL
+              </label>
+
+              <input
+                id="announcementWebhook"
+                type="url"
+                placeholder="https://your-n8n-domain/webhook/..."
+                autocomplete="url"
+              >
+
+            </div>
+
+            <button
+              type="button"
+              class="button button-outline"
+              id="saveWebhookButton"
+            >
+              Save connection <span>↗</span>
+            </button>
+
+            <div
+              id="webhookStatus"
+              class="small-status"
+              role="status"
+              aria-live="polite"
+            ></div>
+
+            <div class="privacy-note">
+              <span>♢</span>
+              Stored in this browser only.
+              Avoid sharing this device with others if the URL is sensitive.
+            </div>
+
           </section>
 
-          <div class="tip-card"><span class="tip-icon">✦</span><div><strong>Good to know</strong><p>Before publishing, double-check the audience and important dates. Your n8n workflow controls the actual delivery.</p></div></div>
+          <div class="tip-card">
+
+            <span class="tip-icon">✦</span>
+
+            <div>
+              <strong>Good to know</strong>
+              <p>
+                Before publishing, double-check the audience and important dates.
+                Your n8n workflow controls the actual delivery.
+              </p>
+            </div>
+
+          </div>
+
         </aside>
+
       </div>
-      <footer class="page-footer"><span>© 2026 Campus Autopilot</span><span>Designed for smarter campus communication <b>✦</b></span></footer>
+
+      <footer class="page-footer">
+
+        <span>© 2026 Campus Autopilot</span>
+
+        <span>
+          Designed for smarter campus communication <b>✦</b>
+        </span>
+
+      </footer>
+
     </main>
+
   </div>
+
 </body>
 </html>
