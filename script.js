@@ -1,14 +1,12 @@
 
 /* =========================================================
    CAMPUS AUTOPILOT — NOTICE PAGE LOGIC
-   Website → n8n Production Webhook
+   Website → n8n Webhook
    ========================================================= */
 
 "use strict";
 
-/* =========================================================
-   1. CONFIGURATION
-   ========================================================= */
+/* 1. CONFIGURATION */
 
 const STORAGE_KEYS = {
   announcementWebhook: "campus_autopilot_announcement_webhook"
@@ -17,51 +15,52 @@ const STORAGE_KEYS = {
 const DEFAULT_WEBHOOK_URL =
   "https://campus-autopilot.app.n8n.cloud/webhook/c494a389-57d5-4e97-84c1-dc37fdbca64e";
 
+// Keep test mode enabled until testing is complete.
+const SEND_MODE = "production";
+
 const DIVISION_MAPPING = {
   FY: {
-    "CSE": ["A", "B", "C"],
+    CSE: ["A", "B", "C"],
     "CSE-DS": ["D"],
     "CSE-AIML": ["E", "F"],
-    "ENTC": ["G"],
-    "Chemical": ["H"],
-    "Civil": ["I"],
-    "Mechanical": ["J"]
+    ENTC: ["G"],
+    Chemical: ["H"],
+    Civil: ["I"],
+    Mechanical: ["J"]
   },
 
   SY: {
-    "CSE": ["A", "B", "C"],
+    CSE: ["A", "B", "C"],
     "CSE-DS": ["A", "B"],
     "CSE-AIML": ["A", "B"],
-    "ENTC": ["A", "B"],
-    "Chemical": ["A", "B"],
-    "Civil": ["A", "B"],
-    "Mechanical": ["A", "B"]
+    ENTC: ["A", "B"],
+    Chemical: ["A", "B"],
+    Civil: ["A", "B"],
+    Mechanical: ["A", "B"]
   },
 
   TY: {
-    "CSE": ["A", "B", "C"],
+    CSE: ["A", "B", "C"],
     "CSE-DS": ["A", "B"],
     "CSE-AIML": ["A", "B"],
-    "ENTC": ["A", "B"],
-    "Chemical": ["A", "B"],
-    "Civil": ["A", "B"],
-    "Mechanical": ["A", "B"]
+    ENTC: ["A", "B"],
+    Chemical: ["A", "B"],
+    Civil: ["A", "B"],
+    Mechanical: ["A", "B"]
   },
 
   "Final Year": {
-    "CSE": ["A", "B", "C"],
+    CSE: ["A", "B", "C"],
     "CSE-DS": ["A", "B"],
     "CSE-AIML": ["A", "B"],
-    "ENTC": ["A", "B"],
-    "Chemical": ["A", "B"],
-    "Civil": ["A", "B"],
-    "Mechanical": ["A", "B"]
+    ENTC: ["A", "B"],
+    Chemical: ["A", "B"],
+    Civil: ["A", "B"],
+    Mechanical: ["A", "B"]
   }
 };
 
-/* =========================================================
-   2. DOM ELEMENTS
-   ========================================================= */
+/* 2. DOM ELEMENTS */
 
 const $ = id => document.getElementById(id);
 
@@ -81,9 +80,7 @@ const webhookInput = $("announcementWebhook");
 const submitButton = $("submitButton");
 const statusBox = $("announcementStatus");
 
-/* =========================================================
-   3. STATUS MESSAGES
-   ========================================================= */
+/* 3. STATUS MESSAGES */
 
 function setStatus(message, type = "info") {
   if (!statusBox) return;
@@ -101,9 +98,7 @@ function clearStatus() {
   statusBox.className = "form-status";
 }
 
-/* =========================================================
-   4. SELECT HELPERS
-   ========================================================= */
+/* 4. SELECT HELPERS */
 
 function populateSelect(select, placeholder, values) {
   if (!select) return;
@@ -118,7 +113,6 @@ function populateSelect(select, placeholder, values) {
 
   values.forEach(value => {
     const option = document.createElement("option");
-
     option.value = value;
     option.textContent = value;
 
@@ -132,9 +126,7 @@ function getRecipientType() {
   )?.value || "all";
 }
 
-/* =========================================================
-   5. AUDIENCE SELECTION
-   ========================================================= */
+/* 5. AUDIENCE SELECTION */
 
 function updateAudienceUI() {
   const type = getRecipientType();
@@ -143,40 +135,32 @@ function updateAudienceUI() {
     classroomFields.hidden = type !== "classroom";
   }
 
-  if ($("allStudentsCard")) {
-    $("allStudentsCard").classList.toggle(
-      "selected",
-      type === "all"
-    );
-  }
+  $("allStudentsCard")?.classList.toggle(
+    "selected",
+    type === "all"
+  );
 
-  if ($("classroomCard")) {
-    $("classroomCard").classList.toggle(
-      "selected",
-      type === "classroom"
-    );
-  }
+  $("classroomCard")?.classList.toggle(
+    "selected",
+    type === "classroom"
+  );
 
   updatePreview();
 }
 
-/* =========================================================
-   6. BRANCH AND DIVISION
-   ========================================================= */
+/* 6. BRANCH AND DIVISION */
 
 function updateBranches() {
-  const year = yearSelect.value;
+  if (!yearSelect || !branchSelect || !divisionSelect) return;
 
   const branches =
-    year && DIVISION_MAPPING[year]
-      ? Object.keys(DIVISION_MAPPING[year])
+    yearSelect.value && DIVISION_MAPPING[yearSelect.value]
+      ? Object.keys(DIVISION_MAPPING[yearSelect.value])
       : [];
 
   populateSelect(
     branchSelect,
-    branches.length
-      ? "Select branch"
-      : "Select year first",
+    branches.length ? "Select branch" : "Select year first",
     branches
   );
 
@@ -197,17 +181,14 @@ function updateBranches() {
 }
 
 function updateDivisions() {
-  const year = yearSelect.value;
-  const branch = branchSelect.value;
+  if (!yearSelect || !branchSelect || !divisionSelect) return;
 
   const divisions =
-    DIVISION_MAPPING[year]?.[branch] || [];
+    DIVISION_MAPPING[yearSelect.value]?.[branchSelect.value] || [];
 
   populateSelect(
     divisionSelect,
-    divisions.length
-      ? "Select division"
-      : "Select branch first",
+    divisions.length ? "Select division" : "Select branch first",
     divisions
   );
 
@@ -220,50 +201,42 @@ function updateDivisions() {
   }
 }
 
-/* =========================================================
-   7. CHARACTER COUNTERS
-   ========================================================= */
+/* 7. CHARACTER COUNTERS */
 
-function updateCounter(input, counter, max) {
-  const counterElement = $(counter);
+function updateCounter(input, counterId, max) {
+  const counter = $(counterId);
 
-  if (input && counterElement) {
-    counterElement.textContent =
+  if (input && counter) {
+    counter.textContent =
       `${input.value.length} / ${max}`;
   }
 }
 
-/* =========================================================
-   8. LIVE PREVIEW
-   ========================================================= */
+/* 8. LIVE PREVIEW */
 
 function updatePreview() {
   if (!titleInput || !messageInput) return;
 
-  const title = titleInput.value.trim();
-  const message = messageInput.value.trim();
-
   if ($("previewTitle")) {
     $("previewTitle").textContent =
-      title || "Your notice title appears here";
+      titleInput.value.trim() ||
+      "Your notice title appears here";
   }
 
   if ($("previewMessage")) {
     $("previewMessage").textContent =
-      message ||
+      messageInput.value.trim() ||
       "Your notice message will appear here. Add the details students need to know.";
   }
 
   let audience = "All Students";
 
   if (getRecipientType() === "classroom") {
-    const year = yearSelect.value;
-    const branch = branchSelect.value;
-    const division = divisionSelect.value;
-
-    audience =
-      [year, branch, division].filter(Boolean).join(" · ") ||
-      "Specific Classroom";
+    audience = [
+      yearSelect?.value,
+      branchSelect?.value,
+      divisionSelect?.value
+    ].filter(Boolean).join(" · ") || "Specific Classroom";
   }
 
   if ($("previewAudience")) {
@@ -272,45 +245,37 @@ function updatePreview() {
 
   const dateValue = $("announcementDate")?.value;
 
-  if (dateValue && $("previewDate")) {
-    const parsed = new Date(`${dateValue}T00:00:00`);
-
-    $("previewDate").textContent =
-      parsed.toLocaleDateString(undefined, {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      });
-  } else if ($("previewDate")) {
-    $("previewDate").textContent = "Today";
+  if ($("previewDate")) {
+    $("previewDate").textContent = dateValue
+      ? new Date(`${dateValue}T00:00:00`).toLocaleDateString(
+          undefined,
+          {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          }
+        )
+      : "Today";
   }
 }
 
-/* =========================================================
-   9. WEBHOOK CONFIGURATION
-   ========================================================= */
+/* 9. WEBHOOK CONFIGURATION */
 
 function getWebhookUrl() {
   return (
-    webhookInput?.value ||
-    localStorage.getItem(STORAGE_KEYS.announcementWebhook) ||
+    webhookInput?.value?.trim() ||
+    localStorage.getItem(
+      STORAGE_KEYS.announcementWebhook
+    ) ||
     DEFAULT_WEBHOOK_URL
   ).trim();
 }
 
 function saveWebhook() {
-  const value = getWebhookUrl();
+  const value =
+    webhookInput?.value?.trim() || DEFAULT_WEBHOOK_URL;
 
   const status = $("webhookStatus");
-
-  if (!value) {
-    if (status) {
-      status.textContent = "Enter your webhook URL first.";
-      status.style.color = "#ffabb4";
-    }
-
-    return;
-  }
 
   try {
     const parsed = new URL(value);
@@ -335,7 +300,7 @@ function saveWebhook() {
       status.style.color = "#9be8c1";
     }
 
-  } catch (error) {
+  } catch {
     if (status) {
       status.textContent =
         "Please enter a valid HTTP or HTTPS webhook URL.";
@@ -345,15 +310,15 @@ function saveWebhook() {
   }
 }
 
-/* =========================================================
-   10. FORM VALIDATION
-   ========================================================= */
+/* 10. FORM VALIDATION */
 
 function validateForm() {
+  if (!titleInput || !messageInput) {
+    return "The announcement form could not be found.";
+  }
+
   const title = titleInput.value.trim();
   const message = messageInput.value.trim();
-
-  const recipientType = getRecipientType();
 
   const date = $("announcementDate")?.value || "";
   const time = $("announcementTime")?.value || "";
@@ -362,24 +327,31 @@ function validateForm() {
     return "Please enter a notice title.";
   }
 
+  if (title.length > 120) {
+    return "Notice title must be 120 characters or fewer.";
+  }
+
   if (!message) {
     return "Please enter the notice message.";
   }
 
-  // Current n8n workflow supports specific classroom targeting.
-  if (recipientType !== "classroom") {
+  if (message.length > 5000) {
+    return "Notice message must be 5000 characters or fewer.";
+  }
+
+  if (getRecipientType() !== "classroom") {
     return "All Students broadcasting is not enabled yet. Please select Specific Classroom.";
   }
 
-  if (!yearSelect.value) {
+  if (!yearSelect?.value) {
     return "Please select an academic year.";
   }
 
-  if (!branchSelect.value) {
+  if (!branchSelect?.value) {
     return "Please select a branch.";
   }
 
-  if (!divisionSelect.value) {
+  if (!divisionSelect?.value) {
     return "Please select a division.";
   }
 
@@ -399,29 +371,21 @@ function validateForm() {
     }
   }
 
-  const webhook = getWebhookUrl();
-
-  if (!webhook) {
-    return "Please configure your n8n webhook URL.";
-  }
-
   try {
-    const url = new URL(webhook);
+    const url = new URL(getWebhookUrl());
 
     if (!["http:", "https:"].includes(url.protocol)) {
       return "Invalid webhook URL.";
     }
+
   } catch {
-    return "Please enter a valid webhook URL.";
+    return "Please enter a valid n8n webhook URL.";
   }
 
   return "";
 }
 
-/* =========================================================
-   11. BUILD N8N PAYLOAD
-   IMPORTANT: Field names match the n8n validation node.
-   ========================================================= */
+/* 11. BUILD N8N PAYLOAD */
 
 function buildPayload() {
   const scheduledDate =
@@ -434,24 +398,22 @@ function buildPayload() {
   const message = messageInput.value.trim();
 
   let noticeText =
-    "Title: " + title + "\n\n" +
-    message;
+    `Title: ${title}\n\n${message}`;
 
   if (scheduledDate && scheduledTime) {
     noticeText +=
-      "\n\nScheduled Date: " + scheduledDate +
-      "\nScheduled Time: " + scheduledTime +
+      `\n\nScheduled Date: ${scheduledDate}` +
+      `\nScheduled Time: ${scheduledTime}` +
       "\nTimezone: Asia/Kolkata";
   }
 
   return {
-    // EXACT FIELD NAMES EXPECTED BY N8N
     "Branch": branchSelect.value,
     "Year": yearSelect.value,
     "Division": divisionSelect.value,
+
     "Notice Text": noticeText,
 
-    // Additional information for downstream nodes
     "Title": title,
     "Message": message,
 
@@ -466,6 +428,8 @@ function buildPayload() {
         ? "scheduled"
         : "immediate",
 
+    "Send Mode": SEND_MODE,
+
     "Timezone": "Asia/Kolkata",
 
     "Source": "Campus Autopilot Website",
@@ -474,9 +438,7 @@ function buildPayload() {
   };
 }
 
-/* =========================================================
-   12. SUBMIT NOTICE TO N8N
-   ========================================================= */
+/* 12. SUBMIT NOTICE TO N8N */
 
 async function publishNotice(event) {
   event.preventDefault();
@@ -490,6 +452,11 @@ async function publishNotice(event) {
     return;
   }
 
+  if (!submitButton) {
+    setStatus("Publish button could not be found.", "error");
+    return;
+  }
+
   const originalButtonText = submitButton.innerHTML;
 
   submitButton.disabled = true;
@@ -498,16 +465,22 @@ async function publishNotice(event) {
     "<span>Sending to Campus Autopilot...</span>";
 
   setStatus(
-    "Submitting your announcement to the n8n workflow. Please wait.",
+    "Submitting your announcement to n8n. Please wait.",
     "info"
   );
 
   try {
+    /*
+     * text/plain normally avoids the browser OPTIONS preflight.
+     * The n8n response must still allow the website origin.
+     */
+
     const response = await fetch(getWebhookUrl(), {
       method: "POST",
+      mode: "cors",
 
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "text/plain;charset=UTF-8"
       },
 
       body: JSON.stringify(buildPayload())
@@ -518,28 +491,27 @@ async function publishNotice(event) {
     if (!response.ok) {
       throw new Error(
         `n8n returned HTTP ${response.status}` +
-        (
-          responseText
-            ? `: ${responseText.slice(0, 250)}`
-            : ""
-        )
+        (responseText
+          ? `: ${responseText.slice(0, 250)}`
+          : "")
       );
     }
 
-    let result = null;
+    let result = responseText;
 
     try {
       result = responseText
         ? JSON.parse(responseText)
-        : null;
+        : {};
+
     } catch {
-      // n8n may return plain text.
+      // Plain text response is also accepted.
     }
 
-    console.log("n8n webhook response:", result || responseText);
+    console.log("n8n webhook response:", result);
 
     setStatus(
-      "Announcement submitted successfully to n8n. Check the n8n execution to confirm validation, faculty approval, email sending and calendar processing.",
+      "Announcement received by n8n. Check the n8n execution to confirm validation. Test mode is enabled.",
       "success"
     );
 
@@ -548,8 +520,9 @@ async function publishNotice(event) {
 
     setStatus(
       "Could not submit the announcement. " +
-      (error.message || "Check your internet connection and n8n webhook configuration.") +
-      " If the browser reports a CORS error, configure Allowed Origins in the n8n Webhook node.",
+      (error.message ||
+        "Check your internet connection and n8n webhook configuration.") +
+      " If this remains a CORS error, inspect the OPTIONS/POST request in DevTools.",
       "error"
     );
 
@@ -559,25 +532,20 @@ async function publishNotice(event) {
   }
 }
 
-/* =========================================================
-   13. RESET FORM
-   ========================================================= */
+/* 13. RESET FORM */
 
 function resetFormState() {
   clearStatus();
 
   updateAudienceUI();
   updateBranches();
-
   updatePreview();
 
   updateCounter(titleInput, "titleCount", 120);
   updateCounter(messageInput, "messageCount", 5000);
 }
 
-/* =========================================================
-   14. INITIALIZE WEBSITE
-   ========================================================= */
+/* 14. INITIALIZE WEBSITE */
 
 function initialize() {
   if (!form || !titleInput || !messageInput) {
@@ -588,37 +556,34 @@ function initialize() {
     return;
   }
 
-  // Load saved webhook or use the production webhook.
-  const savedWebhook =
-    localStorage.getItem(STORAGE_KEYS.announcementWebhook);
+  const savedWebhook = localStorage.getItem(
+    STORAGE_KEYS.announcementWebhook
+  );
 
   if (webhookInput) {
     webhookInput.value =
       savedWebhook || DEFAULT_WEBHOOK_URL;
   }
 
-  // Recipient selection
   recipientInputs.forEach(input => {
     input.addEventListener("change", updateAudienceUI);
   });
 
-  // Academic year, branch and division
-  yearSelect.addEventListener("change", () => {
+  yearSelect?.addEventListener("change", () => {
     updateBranches();
     updatePreview();
   });
 
-  branchSelect.addEventListener("change", () => {
+  branchSelect?.addEventListener("change", () => {
     updateDivisions();
     updatePreview();
   });
 
-  divisionSelect.addEventListener(
+  divisionSelect?.addEventListener(
     "change",
     updatePreview
   );
 
-  // Title and message counters
   titleInput.addEventListener("input", () => {
     updateCounter(titleInput, "titleCount", 120);
     updatePreview();
@@ -629,7 +594,6 @@ function initialize() {
     updatePreview();
   });
 
-  // Schedule preview
   $("announcementDate")?.addEventListener(
     "change",
     updatePreview
@@ -640,7 +604,6 @@ function initialize() {
     updatePreview
   );
 
-  // Buttons
   $("saveWebhookButton")?.addEventListener(
     "click",
     saveWebhook
@@ -650,10 +613,8 @@ function initialize() {
     window.setTimeout(resetFormState, 0);
   });
 
-  // Form submission
   form.addEventListener("submit", publishNotice);
 
-  // Initial UI
   updateBranches();
   updateAudienceUI();
 
@@ -663,7 +624,7 @@ function initialize() {
   updatePreview();
 
   console.log(
-    "Campus Autopilot announcement page initialized."
+    `Campus Autopilot initialized. Send mode: ${SEND_MODE}.`
   );
 }
 
