@@ -1,12 +1,15 @@
 
 /* =========================================================
    CAMPUS AUTOPILOT — NOTICE PAGE LOGIC
-   Website → n8n Webhook
+   Website → n8n Production Webhook
+   HTML + CSS + Vanilla JavaScript + n8n
    ========================================================= */
 
 "use strict";
 
-/* 1. CONFIGURATION */
+/* =========================================================
+   1. CONFIGURATION
+   ========================================================= */
 
 const STORAGE_KEYS = {
   announcementWebhook: "campus_autopilot_announcement_webhook"
@@ -15,8 +18,11 @@ const STORAGE_KEYS = {
 const DEFAULT_WEBHOOK_URL =
   "https://campus-autopilot.app.n8n.cloud/webhook/c494a389-57d5-4e97-84c1-dc37fdbca64e";
 
-// Keep test mode enabled until testing is complete.
+// Production mode: real workflow execution.
+// Actual email delivery still depends on n8n authorization.
 const SEND_MODE = "production";
+
+const TIMEZONE = "Asia/Kolkata";
 
 const DIVISION_MAPPING = {
   FY: {
@@ -60,7 +66,16 @@ const DIVISION_MAPPING = {
   }
 };
 
-/* 2. DOM ELEMENTS */
+const YEAR_NUMBER_MAPPING = {
+  FY: 1,
+  SY: 2,
+  TY: 3,
+  "Final Year": 4
+};
+
+/* =========================================================
+   2. DOM ELEMENTS
+   ========================================================= */
 
 const $ = id => document.getElementById(id);
 
@@ -72,6 +87,7 @@ const recipientInputs =
   document.querySelectorAll('input[name="recipientType"]');
 
 const classroomFields = $("classroomFields");
+
 const yearSelect = $("academicYear");
 const branchSelect = $("branch");
 const divisionSelect = $("division");
@@ -80,7 +96,9 @@ const webhookInput = $("announcementWebhook");
 const submitButton = $("submitButton");
 const statusBox = $("announcementStatus");
 
-/* 3. STATUS MESSAGES */
+/* =========================================================
+   3. STATUS MESSAGES
+   ========================================================= */
 
 function setStatus(message, type = "info") {
   if (!statusBox) return;
@@ -98,7 +116,9 @@ function clearStatus() {
   statusBox.className = "form-status";
 }
 
-/* 4. SELECT HELPERS */
+/* =========================================================
+   4. SELECT HELPERS
+   ========================================================= */
 
 function populateSelect(select, placeholder, values) {
   if (!select) return;
@@ -113,6 +133,7 @@ function populateSelect(select, placeholder, values) {
 
   values.forEach(value => {
     const option = document.createElement("option");
+
     option.value = value;
     option.textContent = value;
 
@@ -126,7 +147,9 @@ function getRecipientType() {
   )?.value || "all";
 }
 
-/* 5. AUDIENCE SELECTION */
+/* =========================================================
+   5. AUDIENCE SELECTION
+   ========================================================= */
 
 function updateAudienceUI() {
   const type = getRecipientType();
@@ -148,10 +171,14 @@ function updateAudienceUI() {
   updatePreview();
 }
 
-/* 6. BRANCH AND DIVISION */
+/* =========================================================
+   6. BRANCH AND DIVISION
+   ========================================================= */
 
 function updateBranches() {
-  if (!yearSelect || !branchSelect || !divisionSelect) return;
+  if (!yearSelect || !branchSelect || !divisionSelect) {
+    return;
+  }
 
   const branches =
     yearSelect.value && DIVISION_MAPPING[yearSelect.value]
@@ -181,7 +208,9 @@ function updateBranches() {
 }
 
 function updateDivisions() {
-  if (!yearSelect || !branchSelect || !divisionSelect) return;
+  if (!yearSelect || !branchSelect || !divisionSelect) {
+    return;
+  }
 
   const divisions =
     DIVISION_MAPPING[yearSelect.value]?.[branchSelect.value] || [];
@@ -201,7 +230,9 @@ function updateDivisions() {
   }
 }
 
-/* 7. CHARACTER COUNTERS */
+/* =========================================================
+   7. CHARACTER COUNTERS
+   ========================================================= */
 
 function updateCounter(input, counterId, max) {
   const counter = $(counterId);
@@ -212,7 +243,9 @@ function updateCounter(input, counterId, max) {
   }
 }
 
-/* 8. LIVE PREVIEW */
+/* =========================================================
+   8. LIVE PREVIEW
+   ========================================================= */
 
 function updatePreview() {
   if (!titleInput || !messageInput) return;
@@ -259,43 +292,47 @@ function updatePreview() {
   }
 }
 
-/* 9. WEBHOOK CONFIGURATION */
+/* =========================================================
+   9. WEBHOOK CONFIGURATION
+   ========================================================= */
+
+// Always use the production webhook.
+// Do not allow a previously saved test URL to override it.
 
 function getWebhookUrl() {
-  return (
-    webhookInput?.value?.trim() ||
-    localStorage.getItem(
-      STORAGE_KEYS.announcementWebhook
-    ) ||
-    DEFAULT_WEBHOOK_URL
-  ).trim();
+  return DEFAULT_WEBHOOK_URL;
 }
 
 function saveWebhook() {
+  const status = $("webhookStatus");
+
   const value =
     webhookInput?.value?.trim() || DEFAULT_WEBHOOK_URL;
 
-  const status = $("webhookStatus");
-
   try {
     const parsed = new URL(value);
+    const expected = new URL(DEFAULT_WEBHOOK_URL);
 
-    if (!["http:", "https:"].includes(parsed.protocol)) {
-      throw new Error("Invalid protocol");
+    if (
+      parsed.protocol !== "https:" ||
+      parsed.origin !== expected.origin ||
+      parsed.pathname !== expected.pathname
+    ) {
+      throw new Error("Unexpected webhook URL");
     }
 
     localStorage.setItem(
       STORAGE_KEYS.announcementWebhook,
-      value
+      DEFAULT_WEBHOOK_URL
     );
 
     if (webhookInput) {
-      webhookInput.value = value;
+      webhookInput.value = DEFAULT_WEBHOOK_URL;
     }
 
     if (status) {
       status.textContent =
-        "n8n webhook connection saved successfully.";
+        "Production n8n webhook connection saved successfully.";
 
       status.style.color = "#9be8c1";
     }
@@ -303,17 +340,19 @@ function saveWebhook() {
   } catch {
     if (status) {
       status.textContent =
-        "Please enter a valid HTTP or HTTPS webhook URL.";
+        "Only the configured production webhook URL is allowed.";
 
       status.style.color = "#ffabb4";
     }
   }
 }
 
-/* 10. FORM VALIDATION */
+/* =========================================================
+   10. FORM VALIDATION
+   ========================================================= */
 
 function validateForm() {
-  if (!titleInput || !messageInput) {
+  if (!form || !titleInput || !messageInput) {
     return "The announcement form could not be found.";
   }
 
@@ -347,12 +386,29 @@ function validateForm() {
     return "Please select an academic year.";
   }
 
+  if (!YEAR_NUMBER_MAPPING[yearSelect.value]) {
+    return "Invalid academic year selection.";
+  }
+
   if (!branchSelect?.value) {
     return "Please select a branch.";
   }
 
+  if (
+    !DIVISION_MAPPING[yearSelect.value]?.[branchSelect.value]
+  ) {
+    return "The selected branch is not available for this year.";
+  }
+
   if (!divisionSelect?.value) {
     return "Please select a division.";
+  }
+
+  if (
+    !DIVISION_MAPPING[yearSelect.value][branchSelect.value]
+      .includes(divisionSelect.value)
+  ) {
+    return "The selected division is not valid for this classroom.";
   }
 
   if ((date && !time) || (!date && time)) {
@@ -371,21 +427,16 @@ function validateForm() {
     }
   }
 
-  try {
-    const url = new URL(getWebhookUrl());
-
-    if (!["http:", "https:"].includes(url.protocol)) {
-      return "Invalid webhook URL.";
-    }
-
-  } catch {
-    return "Please enter a valid n8n webhook URL.";
+  if (getWebhookUrl() !== DEFAULT_WEBHOOK_URL) {
+    return "The production webhook URL is invalid.";
   }
 
   return "";
 }
 
-/* 11. BUILD N8N PAYLOAD */
+/* =========================================================
+   11. BUILD N8N PAYLOAD
+   ========================================================= */
 
 function buildPayload() {
   const scheduledDate =
@@ -397,40 +448,49 @@ function buildPayload() {
   const title = titleInput.value.trim();
   const message = messageInput.value.trim();
 
-  let noticeText =
-    `Title: ${title}\n\n${message}`;
+  const year = yearSelect.value;
+  const yearNumber = YEAR_NUMBER_MAPPING[year];
 
-  if (scheduledDate && scheduledTime) {
+  const isScheduled = Boolean(
+    scheduledDate && scheduledTime
+  );
+
+  let noticeText = `Title: ${title}\n\n${message}`;
+
+  if (isScheduled) {
     noticeText +=
       `\n\nScheduled Date: ${scheduledDate}` +
       `\nScheduled Time: ${scheduledTime}` +
-      "\nTimezone: Asia/Kolkata";
+      `\nTimezone: ${TIMEZONE}`;
   }
 
   return {
-    "Branch": branchSelect.value,
-    "Year": yearSelect.value,
-    "Division": divisionSelect.value,
-
-    "Notice Text": noticeText,
-
     "Title": title,
     "Message": message,
+    "Notice Text": noticeText,
 
     "Recipient Type": "classroom",
     "Audience": "Specific Classroom",
 
+    "Year": year,
+    "Year Number": yearNumber,
+
+    "Branch": branchSelect.value,
+    "Division": divisionSelect.value,
+
     "Scheduled Date": scheduledDate,
     "Scheduled Time": scheduledTime,
 
-    "Publish Mode":
-      scheduledDate && scheduledTime
-        ? "scheduled"
-        : "immediate",
+    "Schedule Date": scheduledDate,
+    "Schedule Time": scheduledTime,
+
+    "Publish Mode": isScheduled
+      ? "scheduled"
+      : "immediate",
 
     "Send Mode": SEND_MODE,
 
-    "Timezone": "Asia/Kolkata",
+    "Timezone": TIMEZONE,
 
     "Source": "Campus Autopilot Website",
 
@@ -438,7 +498,9 @@ function buildPayload() {
   };
 }
 
-/* 12. SUBMIT NOTICE TO N8N */
+/* =========================================================
+   12. SUBMIT NOTICE TO N8N
+   ========================================================= */
 
 async function publishNotice(event) {
   event.preventDefault();
@@ -462,18 +524,17 @@ async function publishNotice(event) {
   submitButton.disabled = true;
 
   submitButton.innerHTML =
-    "<span>Sending to Campus Autopilot...</span>";
+    "<span>Submitting announcement...</span>";
 
   setStatus(
-    "Submitting your announcement to n8n. Please wait.",
+    "Submitting your announcement to Campus Autopilot. Please wait.",
     "info"
   );
 
   try {
-    /*
-     * text/plain normally avoids the browser OPTIONS preflight.
-     * The n8n response must still allow the website origin.
-     */
+    const payload = buildPayload();
+
+    console.log("Campus Autopilot payload:", payload);
 
     const response = await fetch(getWebhookUrl(), {
       method: "POST",
@@ -483,7 +544,7 @@ async function publishNotice(event) {
         "Content-Type": "text/plain;charset=UTF-8"
       },
 
-      body: JSON.stringify(buildPayload())
+      body: JSON.stringify(payload)
     });
 
     const responseText = await response.text();
@@ -505,13 +566,19 @@ async function publishNotice(event) {
         : {};
 
     } catch {
-      // Plain text response is also accepted.
+      // Accept a plain-text response.
     }
 
     console.log("n8n webhook response:", result);
 
+    if (result && result.success === false) {
+      throw new Error(
+        result.message || "n8n rejected the announcement."
+      );
+    }
+
     setStatus(
-      "Announcement received by n8n. Check the n8n execution to confirm validation. Test mode is enabled.",
+      "Announcement accepted by n8n. Check the workflow execution and Gmail node to verify actual student email delivery.",
       "success"
     );
 
@@ -522,7 +589,7 @@ async function publishNotice(event) {
       "Could not submit the announcement. " +
       (error.message ||
         "Check your internet connection and n8n webhook configuration.") +
-      " If this remains a CORS error, inspect the OPTIONS/POST request in DevTools.",
+      " Inspect the POST request and n8n execution for details.",
       "error"
     );
 
@@ -532,7 +599,9 @@ async function publishNotice(event) {
   }
 }
 
-/* 13. RESET FORM */
+/* =========================================================
+   13. RESET FORM
+   ========================================================= */
 
 function resetFormState() {
   clearStatus();
@@ -545,7 +614,9 @@ function resetFormState() {
   updateCounter(messageInput, "messageCount", 5000);
 }
 
-/* 14. INITIALIZE WEBSITE */
+/* =========================================================
+   14. INITIALIZE WEBSITE
+   ========================================================= */
 
 function initialize() {
   if (!form || !titleInput || !messageInput) {
@@ -556,13 +627,14 @@ function initialize() {
     return;
   }
 
-  const savedWebhook = localStorage.getItem(
-    STORAGE_KEYS.announcementWebhook
+  // Remove any previously saved test webhook URL.
+  localStorage.setItem(
+    STORAGE_KEYS.announcementWebhook,
+    DEFAULT_WEBHOOK_URL
   );
 
   if (webhookInput) {
-    webhookInput.value =
-      savedWebhook || DEFAULT_WEBHOOK_URL;
+    webhookInput.value = DEFAULT_WEBHOOK_URL;
   }
 
   recipientInputs.forEach(input => {
@@ -625,6 +697,10 @@ function initialize() {
 
   console.log(
     `Campus Autopilot initialized. Send mode: ${SEND_MODE}.`
+  );
+
+  console.log(
+    `Production webhook: ${DEFAULT_WEBHOOK_URL}`
   );
 }
 
