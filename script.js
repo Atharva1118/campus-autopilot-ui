@@ -4,7 +4,7 @@
 /* =========================================================
    CAMPUS AUTOPILOT
    Announcement Management
-   HTML + CSS + Vanilla JavaScript + n8n Webhooks
+   Vanilla JavaScript + n8n Webhooks
 ========================================================= */
 
 /* =========================================================
@@ -51,7 +51,6 @@ const BRANCHES = [
 ========================================================= */
 
 const DIVISION_MAP = {
-
     "FY": {
         "CSE": ["A", "B", "C"],
         "CSE-DS": ["D"],
@@ -91,7 +90,6 @@ const DIVISION_MAP = {
         "Civil": ["A", "B"],
         "Mechanical": ["A", "B"]
     }
-
 };
 
 /* =========================================================
@@ -139,6 +137,17 @@ const saveWebhookButton =
 const webhookStatus =
     document.getElementById("webhookStatus");
 
+/* Production approval elements */
+
+const productionConfirm =
+    document.getElementById("productionConfirm");
+
+const productionConfirmationBox =
+    document.getElementById("productionConfirmationBox");
+
+const approvalStatus =
+    productionConfirmationBox?.querySelector(".approval-status");
+
 let isSubmitting = false;
 
 /* =========================================================
@@ -146,17 +155,14 @@ let isSubmitting = false;
 ========================================================= */
 
 function getAnnouncementWebhook() {
-
     const savedWebhook = localStorage.getItem(
         STORAGE_KEYS.announcementWebhook
     );
 
     return savedWebhook || DEFAULT_ANNOUNCEMENT_WEBHOOK;
-
 }
 
 function saveAnnouncementWebhook() {
-
     const url = announcementWebhook.value.trim();
 
     if (!url) {
@@ -165,7 +171,6 @@ function saveAnnouncementWebhook() {
     }
 
     try {
-
         const parsedURL = new URL(url);
 
         if (parsedURL.protocol !== "https:") {
@@ -192,41 +197,31 @@ function saveAnnouncementWebhook() {
         );
 
     } catch (error) {
-
         showWebhookStatus(
             "Please enter a valid webhook URL.",
             false
         );
-
     }
-
 }
 
 function showWebhookStatus(message, success) {
-
     if (!webhookStatus) return;
 
     webhookStatus.textContent = message;
 
     webhookStatus.style.color =
         success ? "#16a36a" : "#dc4545";
-
 }
 
 if (announcementWebhook) {
-
-    announcementWebhook.value =
-        getAnnouncementWebhook();
-
+    announcementWebhook.value = getAnnouncementWebhook();
 }
 
 if (saveWebhookButton) {
-
     saveWebhookButton.addEventListener(
         "click",
         saveAnnouncementWebhook
     );
-
 }
 
 /* =========================================================
@@ -234,25 +229,21 @@ if (saveWebhookButton) {
 ========================================================= */
 
 function populateBranches() {
-
     if (!branchSelect) return;
 
     branchSelect.innerHTML =
         '<option value="">Select branch</option>';
 
     BRANCHES.forEach(branch => {
-
         const option = document.createElement("option");
 
         option.value = branch;
         option.textContent = branch;
 
         branchSelect.appendChild(option);
-
     });
 
     branchSelect.disabled = false;
-
 }
 
 /* =========================================================
@@ -260,8 +251,7 @@ function populateBranches() {
 ========================================================= */
 
 function updateDivisions() {
-
-    if (!divisionSelect) return;
+    if (!divisionSelect || !academicYear || !branchSelect) return;
 
     const year = academicYear.value;
     const branch = branchSelect.value;
@@ -275,24 +265,17 @@ function updateDivisions() {
         DIVISION_MAP[year]?.[branch] || [];
 
     if (!year || !branch || divisions.length === 0) {
-
-        updateDivisionHelp(
-            "Choose year and branch first."
-        );
-
+        updateDivisionHelp("Choose year and branch first.");
         return;
-
     }
 
     divisions.forEach(division => {
-
         const option = document.createElement("option");
 
         option.value = division;
         option.textContent = division;
 
         divisionSelect.appendChild(option);
-
     });
 
     divisionSelect.disabled = false;
@@ -300,18 +283,14 @@ function updateDivisions() {
     updateDivisionHelp(
         "Available divisions: " + divisions.join(", ")
     );
-
 }
 
 function updateDivisionHelp(message) {
-
-    const help =
-        document.getElementById("divisionHelp");
+    const help = document.getElementById("divisionHelp");
 
     if (help) {
         help.textContent = message;
     }
-
 }
 
 /* =========================================================
@@ -319,34 +298,24 @@ function updateDivisionHelp(message) {
 ========================================================= */
 
 if (academicYear) {
-
     academicYear.addEventListener("change", function () {
-
         updateDivisions();
         updatePreviewAudience();
-
     });
-
 }
 
 if (branchSelect) {
-
     branchSelect.addEventListener("change", function () {
-
         updateDivisions();
         updatePreviewAudience();
-
     });
-
 }
 
 if (divisionSelect) {
-
     divisionSelect.addEventListener(
         "change",
         updatePreviewAudience
     );
-
 }
 
 /* =========================================================
@@ -354,17 +323,14 @@ if (divisionSelect) {
 ========================================================= */
 
 function getRecipientType() {
-
     const selected = document.querySelector(
         'input[name="recipientType"]:checked'
     );
 
     return selected ? selected.value : "all";
-
 }
 
 function updateAudienceUI() {
-
     const recipientType = getRecipientType();
 
     const allStudentsCard =
@@ -374,53 +340,39 @@ function updateAudienceUI() {
         document.getElementById("classroomCard");
 
     if (allStudentsCard) {
-
         allStudentsCard.classList.toggle(
             "selected",
             recipientType === "all"
         );
-
     }
 
     if (classroomCard) {
-
         classroomCard.classList.toggle(
             "selected",
             recipientType === "classroom"
         );
-
     }
 
     if (classroomFields) {
-
         classroomFields.hidden =
             recipientType !== "classroom";
-
     }
 
     if (recipientType === "classroom") {
-
-        if (branchSelect.options.length <= 1) {
+        if (branchSelect && branchSelect.options.length <= 1) {
             populateBranches();
         }
 
         updateDivisions();
-
     }
 
     updatePreviewAudience();
-
 }
 
 document.querySelectorAll(
     'input[name="recipientType"]'
 ).forEach(radio => {
-
-    radio.addEventListener(
-        "change",
-        updateAudienceUI
-    );
-
+    radio.addEventListener("change", updateAudienceUI);
 });
 
 /* =========================================================
@@ -428,35 +380,30 @@ document.querySelectorAll(
 ========================================================= */
 
 function updateCounter(inputId, counterId, maxLength) {
-
-    const input =
-        document.getElementById(inputId);
-
-    const counter =
-        document.getElementById(counterId);
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
 
     if (!input || !counter) return;
 
-    function update() {
-
+    const update = () => {
         counter.textContent =
             `${input.value.length} / ${maxLength}`;
-
-    }
+    };
 
     input.addEventListener("input", update);
 
     update();
 
+    return update;
 }
 
-updateCounter(
+const updateTitleCounter = updateCounter(
     "announcementTitle",
     "titleCount",
     120
 );
 
-updateCounter(
+const updateMessageCounter = updateCounter(
     "announcementMessage",
     "messageCount",
     5000
@@ -467,7 +414,6 @@ updateCounter(
 ========================================================= */
 
 function updatePreview() {
-
     const previewTitle =
         document.getElementById("previewTitle");
 
@@ -475,27 +421,21 @@ function updatePreview() {
         document.getElementById("previewMessage");
 
     if (previewTitle) {
-
         previewTitle.textContent =
             titleInput.value.trim() ||
             "Your notice title appears here";
-
     }
 
     if (previewMessage) {
-
         previewMessage.textContent =
             messageInput.value.trim() ||
             "Your notice message will appear here. Add the details students need to know.";
-
     }
 
     updatePreviewAudience();
-
 }
 
 function updatePreviewAudience() {
-
     const previewAudience =
         document.getElementById("previewAudience");
 
@@ -504,37 +444,30 @@ function updatePreviewAudience() {
     const recipientType = getRecipientType();
 
     if (recipientType === "all") {
-
         previewAudience.textContent = "All Students";
-
     } else {
-
-        const year =
-            academicYear.value || "Year";
-
-        const branch =
-            branchSelect.value || "Branch";
-
-        const division =
-            divisionSelect.value || "Division";
+        const year = academicYear?.value || "Year";
+        const branch = branchSelect?.value || "Branch";
+        const division = divisionSelect?.value || "Division";
 
         previewAudience.textContent =
             `${year} · ${branch} · ${division}`;
-
     }
-
 }
 
-titleInput.addEventListener("input", updatePreview);
+if (titleInput) {
+    titleInput.addEventListener("input", updatePreview);
+}
 
-messageInput.addEventListener("input", updatePreview);
+if (messageInput) {
+    messageInput.addEventListener("input", updatePreview);
+}
 
 /* =========================================================
    13. PREVIEW DATE
 ========================================================= */
 
 function updatePreviewDate() {
-
     const previewDate =
         document.getElementById("previewDate");
 
@@ -546,21 +479,55 @@ function updatePreviewDate() {
             month: "short",
             year: "numeric"
         });
-
 }
 
-updatePreviewDate();
+/* =========================================================
+   14. PRODUCTION APPROVAL CHECKBOX
+========================================================= */
+
+function updateProductionApprovalUI() {
+    if (!productionConfirm || !productionConfirmationBox) return;
+
+    const approved = productionConfirm.checked;
+
+    productionConfirmationBox.classList.toggle(
+        "is-approved",
+        approved
+    );
+
+    productionConfirmationBox.classList.toggle(
+        "needs-approval",
+        !approved
+    );
+
+    if (approvalStatus) {
+        approvalStatus.textContent =
+            approved ? "APPROVED" : "REVIEW";
+    }
+
+    productionConfirm.setAttribute(
+        "aria-invalid",
+        approved ? "false" : "true"
+    );
+}
+
+if (productionConfirm) {
+    productionConfirm.addEventListener(
+        "change",
+        updateProductionApprovalUI
+    );
+
+    updateProductionApprovalUI();
+}
 
 /* =========================================================
-   14. STATUS MESSAGE
+   15. STATUS MESSAGE
 ========================================================= */
 
 function showAnnouncementStatus(message, success = false) {
-
     if (!announcementStatus) return;
 
     announcementStatus.hidden = false;
-
     announcementStatus.textContent = message;
 
     announcementStatus.classList.remove(
@@ -571,19 +538,17 @@ function showAnnouncementStatus(message, success = false) {
     announcementStatus.classList.add(
         success ? "success" : "error"
     );
-
 }
 
 /* =========================================================
-   15. VALIDATION
+   16. VALIDATION
 ========================================================= */
 
 function validateAnnouncement() {
-
     const errors = [];
 
-    const title = titleInput.value.trim();
-    const message = messageInput.value.trim();
+    const title = titleInput?.value.trim() || "";
+    const message = messageInput?.value.trim() || "";
 
     if (!title) {
         errors.push("Notice title is required.");
@@ -596,76 +561,68 @@ function validateAnnouncement() {
     const recipientType = getRecipientType();
 
     if (recipientType === "classroom") {
-
-        const year = academicYear.value;
-        const branch = branchSelect.value;
-        const division = divisionSelect.value;
+        const year = academicYear?.value || "";
+        const branch = branchSelect?.value || "";
+        const division = divisionSelect?.value || "";
 
         if (!Object.prototype.hasOwnProperty.call(YEAR_MAP, year)) {
-
             errors.push("Please select a valid academic year.");
-
         }
 
         if (!branch) {
-
             errors.push("Please select a branch.");
-
         }
 
         const allowedDivisions =
             DIVISION_MAP[year]?.[branch] || [];
 
         if (!allowedDivisions.includes(division)) {
-
             errors.push(
                 "Invalid division for selected year and branch."
             );
-
         }
-
     }
 
-    const date = announcementDate.value;
-    const time = announcementTime.value;
+    const date = announcementDate?.value || "";
+    const time = announcementTime?.value || "";
 
     if ((date && !time) || (!date && time)) {
-
         errors.push(
             "Select both schedule date and schedule time."
         );
-
     }
 
     if (date && time) {
-
         const scheduledDateTime =
             new Date(`${date}T${time}:00`);
 
         if (Number.isNaN(scheduledDateTime.getTime())) {
-
             errors.push("Invalid schedule date or time.");
-
         } else if (scheduledDateTime <= new Date()) {
-
             errors.push(
                 "Scheduled time must be in the future."
             );
-
         }
+    }
 
+    /* Production mode requires explicit approval */
+
+    if (SEND_MODE === "production") {
+        if (!productionConfirm || !productionConfirm.checked) {
+            errors.push(
+                "Production approval is required. Please review the notice and tick the approval checkbox."
+            );
+        }
     }
 
     return errors;
-
 }
 
 /* =========================================================
-   16. BUILD PAYLOAD
+   17. BUILD PAYLOAD
 ========================================================= */
 
 function buildAnnouncementPayload() {
-
     const title = titleInput.value.trim();
     const message = messageInput.value.trim();
 
@@ -675,12 +632,6 @@ function buildAnnouncementPayload() {
         recipientType === "classroom"
             ? academicYear.value
             : "";
-
-    /*
-       IMPORTANT:
-       The dropdown uses FY/SY/TY/Final Year.
-       The mapping below converts TY into numeric 3.
-    */
 
     const yearNumber =
         year ? YEAR_MAP[year] : null;
@@ -695,19 +646,18 @@ function buildAnnouncementPayload() {
             ? divisionSelect.value
             : "";
 
-    const scheduledDate =
-        announcementDate.value;
-
-    const scheduledTime =
-        announcementTime.value;
+    const scheduledDate = announcementDate.value;
+    const scheduledTime = announcementTime.value;
 
     const publishMode =
         scheduledDate && scheduledTime
             ? "scheduled"
             : "immediate";
 
-    return {
+    const approved =
+        productionConfirm ? productionConfirm.checked : false;
 
+    return {
         "Title": title,
 
         "Message": message,
@@ -742,18 +692,27 @@ function buildAnnouncementPayload() {
 
         "Source": "Campus Autopilot Website",
 
-        "Submitted At": new Date().toISOString()
+        "Submitted At": new Date().toISOString(),
 
+        /* Explicit fields for n8n validation */
+
+        "production_confirmed": approved,
+
+        "production_requested": SEND_MODE === "production",
+
+        "test_mode": SEND_MODE !== "production",
+
+        "send_mode": SEND_MODE,
+
+        "timezone": TIMEZONE
     };
-
 }
 
 /* =========================================================
-   17. SUBMIT ANNOUNCEMENT
+   18. SUBMIT ANNOUNCEMENT
 ========================================================= */
 
 async function submitAnnouncement(event) {
-
     event.preventDefault();
 
     if (isSubmitting) return;
@@ -761,58 +720,61 @@ async function submitAnnouncement(event) {
     const errors = validateAnnouncement();
 
     if (errors.length > 0) {
-
         showAnnouncementStatus(
             errors.join(" "),
             false
         );
 
-        return;
+        if (
+            SEND_MODE === "production" &&
+            productionConfirm &&
+            !productionConfirm.checked
+        ) {
+            productionConfirm.focus();
 
+            productionConfirmationBox?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        } else if (titleInput && !titleInput.value.trim()) {
+            titleInput.focus();
+        } else if (messageInput && !messageInput.value.trim()) {
+            messageInput.focus();
+        }
+
+        return;
     }
 
-    const payload =
-        buildAnnouncementPayload();
+    const payload = buildAnnouncementPayload();
+    const webhookURL = getAnnouncementWebhook();
 
-    const webhookURL =
-        getAnnouncementWebhook();
+    if (!webhookURL) {
+        showAnnouncementStatus(
+            "Announcement webhook URL is missing.",
+            false
+        );
+        return;
+    }
 
-    console.log(
-        "Announcement Payload:",
-        payload
-    );
-
-    console.log(
-        "Selected Year:",
-        payload.Year
-    );
-
-    console.log(
-        "Selected Year Number:",
-        payload["Year Number"]
-    );
-
-    console.log(
-        "Production Send Mode:",
-        payload["Send Mode"]
-    );
+    console.log("Announcement Payload:", payload);
+    console.log("Production Confirmation:", payload.production_confirmed);
+    console.log("Send Mode:", payload.send_mode);
 
     isSubmitting = true;
 
-    submitButton.disabled = true;
-
-    submitButton.innerHTML =
-        "<span>Submitting...</span>";
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.innerHTML =
+            "<span>Submitting...</span>";
+    }
 
     showAnnouncementStatus(
-        "Submitting announcement...",
+        "Submitting announcement to Campus Autopilot...",
         true
     );
 
     try {
-
         const response = await fetch(webhookURL, {
-
             method: "POST",
 
             headers: {
@@ -820,127 +782,140 @@ async function submitAnnouncement(event) {
             },
 
             body: JSON.stringify(payload)
-
         });
 
-        const responseText =
-            await response.text();
+        const responseText = await response.text();
 
-        console.log(
-            "n8n HTTP Status:",
-            response.status
-        );
-
-        console.log(
-            "n8n Response:",
-            responseText
-        );
+        console.log("n8n HTTP Status:", response.status);
+        console.log("n8n Response:", responseText);
 
         if (!response.ok) {
-
             throw new Error(
                 `n8n returned HTTP ${response.status}: ${responseText}`
             );
+        }
 
+        let responseMessage =
+            "Announcement accepted by n8n. Check the workflow execution and Gmail node to verify actual student email delivery.";
+
+        try {
+            const parsedResponse = JSON.parse(responseText);
+
+            if (parsedResponse.message) {
+                responseMessage = parsedResponse.message;
+            } else if (parsedResponse.error) {
+                responseMessage = parsedResponse.error;
+            }
+        } catch (error) {
+            // The webhook may return plain text.
         }
 
         showAnnouncementStatus(
-            "Announcement accepted by n8n. Check the workflow execution and Gmail node to verify actual student email delivery.",
+            responseMessage,
             true
         );
 
     } catch (error) {
-
         console.error(
             "Announcement submission error:",
             error
         );
 
         showAnnouncementStatus(
-            "Could not submit the announcement. Browser could not receive a response from n8n. Check the production webhook execution and CORS response headers.",
+            "Could not confirm submission. Check the n8n production webhook execution and browser console. The request may have reached n8n even if the browser could not read its response.",
             false
         );
 
     } finally {
-
         isSubmitting = false;
 
-        submitButton.disabled = false;
+        if (submitButton) {
+            submitButton.disabled = false;
 
-        submitButton.innerHTML =
-            '<span>Publish notice</span><span class="button-arrow">↗</span>';
-
+            submitButton.innerHTML =
+                '<span>Publish notice</span><span class="button-arrow">↗</span>';
+        }
     }
-
 }
 
 if (form) {
-
     form.addEventListener(
         "submit",
         submitAnnouncement
     );
-
 }
 
 /* =========================================================
-   18. RESET FORM
+   19. RESET FORM
 ========================================================= */
 
 if (form) {
-
     form.addEventListener("reset", function () {
-
         setTimeout(function () {
-
             updateAudienceUI();
-
             updatePreview();
+            updatePreviewDate();
 
-            updateCounter(
-                "announcementTitle",
-                "titleCount",
-                120
-            );
+            if (updateTitleCounter) {
+                updateTitleCounter();
+            }
 
-            updateCounter(
-                "announcementMessage",
-                "messageCount",
-                5000
-            );
+            if (updateMessageCounter) {
+                updateMessageCounter();
+            }
 
             if (announcementStatus) {
-
                 announcementStatus.hidden = true;
                 announcementStatus.textContent = "";
 
+                announcementStatus.classList.remove(
+                    "success",
+                    "error"
+                );
             }
 
+            /* Reset production approval appearance */
+
+            updateProductionApprovalUI();
+
+            /* Restore initial branch state */
+
+            if (branchSelect) {
+                branchSelect.innerHTML =
+                    '<option value="">Select branch</option>';
+
+                branchSelect.disabled = true;
+            }
+
+            if (divisionSelect) {
+                divisionSelect.innerHTML =
+                    '<option value="">Select division</option>';
+
+                divisionSelect.disabled = true;
+            }
+
+            updateDivisionHelp(
+                "Choose year and branch first."
+            );
+
         }, 0);
-
     });
-
 }
 
 /* =========================================================
-   19. INITIALIZE APPLICATION
+   20. INITIALIZE APPLICATION
 ========================================================= */
 
 function initializeCampusAutopilot() {
-
     updateAudienceUI();
-
     updatePreview();
-
     updatePreviewDate();
+    updateProductionApprovalUI();
 
     if (announcementWebhook) {
-
         announcementWebhook.value =
             getAnnouncementWebhook();
-
     }
-
 }
 
 initializeCampusAutopilot();
