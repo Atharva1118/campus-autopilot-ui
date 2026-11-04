@@ -163,7 +163,7 @@ function getAnnouncementWebhook() {
 }
 
 function saveAnnouncementWebhook() {
-    const url = announcementWebhook.value.trim();
+    const url = announcementWebhook?.value.trim();
 
     if (!url) {
         showWebhookStatus("Please enter a webhook URL.", false);
@@ -422,13 +422,13 @@ function updatePreview() {
 
     if (previewTitle) {
         previewTitle.textContent =
-            titleInput.value.trim() ||
+            titleInput?.value.trim() ||
             "Your notice title appears here";
     }
 
     if (previewMessage) {
         previewMessage.textContent =
-            messageInput.value.trim() ||
+            messageInput?.value.trim() ||
             "Your notice message will appear here. Add the details students need to know.";
     }
 
@@ -554,8 +554,16 @@ function validateAnnouncement() {
         errors.push("Notice title is required.");
     }
 
+    if (title.length > 120) {
+        errors.push("Notice title exceeds 120 characters.");
+    }
+
     if (!message) {
         errors.push("Notice message is required.");
+    }
+
+    if (message.length > 5000) {
+        errors.push("Notice message exceeds 5000 characters.");
     }
 
     const recipientType = getRecipientType();
@@ -605,10 +613,10 @@ function validateAnnouncement() {
         }
     }
 
-    /* Production mode requires explicit approval */
+    /* Production confirmation is mandatory */
 
     if (SEND_MODE === "production") {
-        if (!productionConfirm || !productionConfirm.checked) {
+        if (!productionConfirm || productionConfirm.checked !== true) {
             errors.push(
                 "Production approval is required. Please review the notice and tick the approval checkbox."
             );
@@ -654,10 +662,19 @@ function buildAnnouncementPayload() {
             ? "scheduled"
             : "immediate";
 
-    const approved =
-        productionConfirm ? productionConfirm.checked : false;
+    /*
+       Read checkbox directly at submission time.
+       Do not rely on a previously stored value.
+    */
 
-    return {
+    const approved =
+        productionConfirm instanceof HTMLInputElement &&
+        productionConfirm.type === "checkbox" &&
+        productionConfirm.checked === true;
+
+    const submittedAt = new Date().toISOString();
+
+    const payload = {
         "Title": title,
 
         "Message": message,
@@ -692,13 +709,19 @@ function buildAnnouncementPayload() {
 
         "Source": "Campus Autopilot Website",
 
-        "Submitted At": new Date().toISOString(),
+        "Submitted At": submittedAt,
 
-        /* Explicit fields for n8n validation */
+        /* Production confirmation */
 
         "production_confirmed": approved,
 
         "production_requested": SEND_MODE === "production",
+
+        "productionConfirmed": approved,
+
+        "Production Confirmed": approved,
+
+        /* Sending controls */
 
         "test_mode": SEND_MODE !== "production",
 
@@ -706,6 +729,8 @@ function buildAnnouncementPayload() {
 
         "timezone": TIMEZONE
     };
+
+    return payload;
 }
 
 /* =========================================================
@@ -756,9 +781,52 @@ async function submitAnnouncement(event) {
         return;
     }
 
+    /*
+       Final client-side safety check.
+       Production requests cannot be submitted
+       without explicit checkbox confirmation.
+    */
+
+    if (
+        SEND_MODE === "production" &&
+        payload.production_confirmed !== true
+    ) {
+        showAnnouncementStatus(
+            "Production confirmation was not detected. Please check the approval checkbox.",
+            false
+        );
+        return;
+    }
+
+    /* Debug information */
+
+    console.log("======================================");
+    console.log("CAMPUS AUTOPILOT SUBMISSION");
+    console.log("======================================");
+
     console.log("Announcement Payload:", payload);
-    console.log("Production Confirmation:", payload.production_confirmed);
-    console.log("Send Mode:", payload.send_mode);
+
+    console.log(
+        "Production Confirmation:",
+        payload.production_confirmed
+    );
+
+    console.log(
+        "Confirmation Checkbox:",
+        productionConfirm?.checked
+    );
+
+    console.log(
+        "Send Mode:",
+        payload.send_mode
+    );
+
+    console.log(
+        "Webhook URL:",
+        webhookURL
+    );
+
+    console.log("======================================");
 
     isSubmitting = true;
 
@@ -796,7 +864,7 @@ async function submitAnnouncement(event) {
         }
 
         let responseMessage =
-            "Announcement accepted by n8n. Check the workflow execution and Gmail node to verify actual student email delivery.";
+            "Announcement accepted by n8n. Check the workflow execution to verify recipient matching and delivery status.";
 
         try {
             const parsedResponse = JSON.parse(responseText);
@@ -874,11 +942,7 @@ if (form) {
                 );
             }
 
-            /* Reset production approval appearance */
-
             updateProductionApprovalUI();
-
-            /* Restore initial branch state */
 
             if (branchSelect) {
                 branchSelect.innerHTML =
@@ -916,6 +980,13 @@ function initializeCampusAutopilot() {
         announcementWebhook.value =
             getAnnouncementWebhook();
     }
+
+    console.log("Campus Autopilot initialized.");
+
+    console.log(
+        "Production checkbox detected:",
+        !!productionConfirm
+    );
 }
 
 initializeCampusAutopilot();
