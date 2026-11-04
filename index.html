@@ -151,7 +151,11 @@
             <span class="step-label">STEP 01</span>
           </div>
 
-          <form id="announcementForm" novalidate>
+          <form
+            id="announcementForm"
+            novalidate
+            data-require-production-confirmation="true"
+          >
 
             <!-- NOTICE TITLE -->
             <div class="field">
@@ -376,7 +380,13 @@
                   </p>
                 </div>
 
-                <span class="approval-status">REVIEW</span>
+                <span
+                  class="approval-status"
+                  id="approvalStatus"
+                  aria-live="polite"
+                >
+                  PENDING
+                </span>
 
               </div>
 
