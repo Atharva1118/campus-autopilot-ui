@@ -1,469 +1,439 @@
 <a id="top"></a>
 
-<div align="center">
+<div align="center">CAMPUS AUTOPILOT
 
-# Campus Autopilot
+Intelligent Campus Communication & Automation Platform
 
-### Intelligent Campus Communication & Automation Platform
+Automating Campus Communication. Simplifying Administration.
 
-*Automating campus communication. Simplifying administration.*
+<br/><a href="https://atharva1118.github.io/campus-autopilot-ui/">
+  <img src="https://img.shields.io/badge/LIVE_DEMO-OPEN_APPLICATION-2563EB?style=for-the-badge&logo=githubpages&logoColor=white" alt="Live Demo"/>
+</a>
+<a href="https://github.com/Atharva1118/campus-autopilot-ui">
+  <img src="https://img.shields.io/badge/SOURCE_CODE-GITHUB-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Repository"/>
+</a><br/><br/>
 
-<br/>
+<img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white" alt="HTML5"/>
+<img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3"/>
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript"/>
+<img src="https://img.shields.io/badge/n8n-EA4B71?style=flat-square&logo=n8n&logoColor=white" alt="n8n"/>
+<img src="https://img.shields.io/badge/Google_Sheets-34A853?style=flat-square&logo=googlesheets&logoColor=white" alt="Google Sheets"/>
+<img src="https://img.shields.io/badge/GitHub_Pages-222222?style=flat-square&logo=githubpages&logoColor=white" alt="GitHub Pages"/><br/><br/>
 
-[
+A centralized campus announcement platform that connects notice management with workflow automation, ensuring the right update reaches the right students at the right time.
 
-![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20App-2563EB?style=for-the-badge&logo=githubpages&logoColor=white)
+</div>---
 
-](https://atharva1118.github.io/campus-autopilot-ui/)
-[
+Table of Contents
 
-![Repo](https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
-
-](https://github.com/Atharva1118/campus-autopilot-ui)
-
-
-
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
-
-
-
-
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
-
-
-
-
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
-
-
-
-
-![n8n](https://img.shields.io/badge/n8n-EA4B71?style=flat-square&logo=n8n&logoColor=white)
-
-
-
-
-![Google Sheets](https://img.shields.io/badge/Google%20Sheets-34A853?style=flat-square&logo=googlesheets&logoColor=white)
-
-
-
-
-![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-222222?style=flat-square&logo=githubpages&logoColor=white)
-
-
-
-<br/>
-
-A centralized campus announcement interface that connects notice management with workflow automation, so the **right update reaches the right students at the right time.**
-
-</div>
+Section| Section| Section
+"01. Overview" (#01-overview)| "02. Live Demo" (#02-live-demo)| "03. Problem Statement" (#03-problem-statement)
+"04. Features" (#04-features)| "05. How to Use" (#05-how-to-use)| "06. Technology Stack" (#06-technology-stack)
+"07. Architecture" (#07-system-architecture)| "08. Application Workflow" (#08-application-workflow)| "09. Project Structure" (#09-project-structure)
+"10. Getting Started" (#10-getting-started)| "11. Deployment" (#11-deployment)| "12. n8n Integration" (#12-n8n-integration)
+"13. API Reference" (#13-api-reference)| "14. Security" (#14-security-notes)| "15. Roadmap" (#15-roadmap)
+"16. Contributing" (#16-contributing)| "17. Author" (#17-author)| 
 
 ---
 
-<div align="center">
+01. Overview
 
-## Table of Contents
+Campus Autopilot is a web-based campus communication platform designed to simplify how educational institutions create, manage, and distribute announcements.
 
-*Click any button to jump to that section.*
+In traditional academic environments, notices are distributed through disconnected channels such as messaging groups, notice boards, emails, and word of mouth. This results in repetitive administrative work, delayed updates, and difficulties reaching specific academic groups.
 
-| | | |
-|:--:|:--:|:--:|
-| [
+Campus Autopilot introduces a centralized notice management interface that connects announcement creation with automated distribution workflows.
 
-![Overview](https://img.shields.io/badge/01-Overview-2563EB?style=for-the-badge&labelColor=1E293B)
+How It Works
 
-](#overview) | [
+1. An administrator creates an announcement.
+2. Selects the intended audience, either all students or a specific classroom.
+3. Chooses immediate or scheduled publishing.
+4. Reviews the announcement and provides final approval.
+5. The application sends a structured JSON request to an n8n webhook.
+6. The configured workflow identifies recipients and handles notification distribution.
 
-![Live Demo](https://img.shields.io/badge/02-Live%20Demo-2563EB?style=for-the-badge&labelColor=1E293B)
+The frontend uses lightweight HTML, CSS, and JavaScript, while n8n manages configurable automation and external service integrations.
 
-](#live-demo) | [
+Project Objectives
 
-![Problem](https://img.shields.io/badge/03-Problem%20Statement-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#problem-statement) |
-| [
-
-![Features](https://img.shields.io/badge/04-Features-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#features) | [
-
-![How to Use](https://img.shields.io/badge/05-How%20to%20Use-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#how-to-use) | [
-
-![Tech Stack](https://img.shields.io/badge/06-Tech%20Stack-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#tech-stack) |
-| [
-
-![Architecture](https://img.shields.io/badge/07-Architecture-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#architecture) | [
-
-![Workflow](https://img.shields.io/badge/08-Workflow-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#application-workflow) | [
-
-![Structure](https://img.shields.io/badge/09-Project%20Structure-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#project-structure) |
-| [
-
-![Getting Started](https://img.shields.io/badge/10-Getting%20Started-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#getting-started) | [
-
-![Deployment](https://img.shields.io/badge/11-Deployment-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#deployment) | [
-
-![n8n](https://img.shields.io/badge/12-n8n%20Integration-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#n8n-integration) |
-| [
-
-![API](https://img.shields.io/badge/13-API%20Reference-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#api-reference) | [
-
-![Security](https://img.shields.io/badge/14-Security%20Notes-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#security-notes) | [
-
-![Roadmap](https://img.shields.io/badge/15-Roadmap-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#roadmap) |
-| [
-
-![Contributing](https://img.shields.io/badge/16-Contributing-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#contributing) | [
-
-![Author](https://img.shields.io/badge/17-Author-2563EB?style=for-the-badge&labelColor=1E293B)
-
-](#author) | |
-
-</div>
+- Centralize campus announcement creation.
+- Reduce repetitive administrative communication.
+- Enable audience segmentation by academic year, branch, and division.
+- Support immediate and scheduled publishing.
+- Introduce an approval checkpoint before production delivery.
+- Connect frontend operations with automation workflows.
+- Establish a foundation for scalable campus communication.
 
 ---
 
-## Overview
+02. Live Demo
 
-**Campus Autopilot** is a web-based platform that simplifies how educational institutions create, manage, and distribute announcements.
+<div align="center">Experience Campus Autopilot
 
-In most colleges, notices travel through disconnected channels such as messaging groups, notice boards, emails, and word of mouth. The result is repeated manual work, delayed updates, and difficulty reaching a specific class or branch.
+<a href="https://atharva1118.github.io/campus-autopilot-ui/">
+  <img src="https://img.shields.io/badge/LAUNCH_LIVE_APPLICATION-2563EB?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Launch Application"/>
+</a>Live Application: "campus-autopilot-ui" (https://atharva1118.github.io/campus-autopilot-ui/)
 
-Campus Autopilot replaces this with a single notice-upload workspace:
+Source Code: "GitHub Repository" (https://github.com/Atharva1118/campus-autopilot-ui)
 
-1. An administrator **writes a notice**.
-2. Chooses the **audience** (the whole college or one specific classroom).
-3. Chooses to **publish now or schedule** for later.
-4. Gives a **final approval**.
-5. The app sends a structured JSON request to an **n8n webhook**, which handles recipient lookup (for example from Google Sheets) and delivery through the configured channels.
-
-The frontend is intentionally lightweight: plain HTML, CSS, and JavaScript with no framework and no build step. Delivery logic lives in n8n, so the same interface can drive email, messaging, or other integrations without frontend changes.
-
-### Objectives
-
-- Centralize campus announcement creation
-- Reduce repetitive administrative communication
-- Enable audience segmentation by year, branch, and division
-- Support immediate and scheduled publishing
-- Add an approval checkpoint before notices reach real students
-- Connect the frontend to automation workflows through webhooks
-- Provide a foundation for scalable campus communication
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+</div>«[!NOTE]
+The application is hosted as a static frontend on GitHub Pages. To enable actual notice delivery, configure your own n8n webhook URL in the Automation Connection panel. Without a configured and active workflow, no notifications are delivered. Use a test workflow before connecting real student data.»
 
 ---
 
-## Live Demo
+03. Problem Statement
 
-The application is deployed on GitHub Pages:
+Educational institutions regularly communicate academic updates, examination schedules, event announcements, placement information, and important notices.
 
-> **https://atharva1118.github.io/campus-autopilot-ui/**
+Traditional communication methods introduce several challenges:
 
-> [!NOTE]
-> The demo is a static frontend. To deliver notices, paste your own n8n webhook URL into the **Automation connection** panel. Without a webhook configured, nothing is sent anywhere. Use a test workflow while experimenting.
+Challenge| Impact
+Manual notice distribution| Repetitive administrative work
+Multiple communication channels| Fragmented information
+Lack of audience segmentation| Students receive irrelevant announcements
+Manual scheduling| Additional coordination
+No centralized management| Difficult notice tracking
+No approval checkpoint| Risk of sending incorrect announcements
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+Our Solution
 
----
+Campus Autopilot provides a centralized interface with:
 
-## Problem Statement
-
-Institutions constantly share academic updates, event announcements, exam schedules, placement information, and urgent notices. Conventional methods cause several problems:
-
-| Challenge | Impact |
-|:--|:--|
-| Manual notice distribution | Repetitive administrative work |
-| Multiple communication channels | Fragmented information |
-| No audience segmentation | Students receive irrelevant announcements |
-| Manual scheduling | Extra coordination effort |
-| No centralized management | Difficult notice tracking |
-| No approval checkpoint | Risk of sending incorrect notices |
-
-**Our approach:** one interface with configurable audience targeting, optional scheduling, an explicit approval step, and a structured automation workflow.
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+- Structured announcement creation.
+- Configurable audience targeting.
+- Immediate and scheduled publishing.
+- Final approval before production delivery.
+- Webhook-based workflow automation.
+- Integration with external student data sources.
 
 ---
 
-## Features
+04. Features
 
-### Notice Creation
+4.1 Notice Creation
 
-- Title field with a **120-character** limit and live counter
-- Message field with a **5,000-character** limit and live counter
-- Multi-paragraph message support
-- Required-field validation before submission
-- **Live preview card** showing the title, message, and selected audience as you type
+- Create announcements with custom titles and descriptions.
+- Title field with a 120-character limit.
+- Message field with a 5,000-character limit.
+- Live character counters.
+- Multi-paragraph message support.
+- Required-field validation.
+- Real-time notice preview.
 
-### Audience Targeting
+4.2 Intelligent Audience Targeting
 
-| Option | Description |
-|:--|:--|
-| **All Students** | Sends to every student in the college |
-| **Specific Classroom** | Targets a year, branch, and division |
+Choose the appropriate recipient group.
 
-Academic year options: **First Year (FY)**, **Second Year (SY)**, **Third Year (TY)**, **Fourth Year (Final Year)**. Branch and division selections depend on the chosen year.
+Audience| Description
+All Students| Targets the entire configured student audience.
+Specific Classroom| Targets students according to academic year, branch, and division.
 
-### Flexible Publishing
+Supported academic years:
 
-- **Immediate:** leave the schedule empty
-- **Scheduled:** choose both a date and a time
-- Validation that date and time are provided together
+- First Year (FY)
+- Second Year (SY)
+- Third Year (TY)
+- Fourth Year (Final Year)
 
-### Final Approval Safeguard
+Branch and division options depend on the selected academic configuration.
 
-- Required checkbox: *"I approve this notice for production delivery"*
-- Warning that production mode can email real student addresses
-- Status indicator that stays **Pending** until approved
+4.3 Flexible Publishing
 
-### Workflow Automation
+- Immediate Publishing: Submit an announcement for immediate workflow processing.
+- Scheduled Publishing: Select a future date and time.
+- Date and time validation.
+- Structured publishing preferences.
 
-- n8n webhook integration over HTTP POST
-- JSON data exchange
-- Configurable webhook URL, saved in the browser
-- Response feedback in the interface
+4.4 Final Approval Safeguard
 
-### Student Data Integration
+- Mandatory approval checkbox.
+- Explicit production delivery confirmation.
+- Review before submitting the announcement.
+- Pending approval status until confirmation.
 
-Google Sheets can be connected through n8n to retrieve student records and identify recipients matching the selected audience.
+4.5 Workflow Automation
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+- n8n webhook integration.
+- HTTP POST communication.
+- JSON-based data exchange.
+- Configurable webhook URL.
+- Browser-based connection configuration.
+- Request response feedback.
 
----
+4.6 Student Data Integration
 
-## How to Use
-
-| Step | Action |
-|:--:|:--|
-| **1** | Open the [live demo](https://atharva1118.github.io/campus-autopilot-ui/). |
-| **2** | In **Automation connection**, paste your n8n production webhook URL and click **Save connection**. |
-| **3** | **Notice details:** enter a title and message and watch the live preview. |
-| **4** | **Audience:** choose *All Students*, or *Specific Classroom* with year, branch, and division. |
-| **5** | **Schedule:** leave empty to publish now, or set both date and time. |
-| **6** | **Approval:** review everything and tick the approval checkbox. |
-| **7** | Click **Publish notice**. The request goes to your webhook and the workflow controls delivery. |
-
-Use **Clear form** to reset the interface at any time.
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+Google Sheets can be integrated through n8n to retrieve student records and identify recipients according to the selected audience.
 
 ---
 
-## Tech Stack
+05. How to Use
 
-| Technology | Role |
-|:--|:--|
-| HTML5 | Frontend structure |
-| CSS3 | Styling and responsive layout |
-| JavaScript (Vanilla) | Application logic and validation |
-| n8n | Workflow automation |
-| Google Sheets | Student data source |
-| Webhooks | Frontend-to-workflow communication |
-| JSON | Data exchange format |
-| GitHub Pages | Static hosting |
-| Git & GitHub | Version control |
+Follow these steps to create and submit an announcement.
 
-### Why these choices
+Step| Action
+01| Open the "Campus Autopilot Live Demo" (https://atharva1118.github.io/campus-autopilot-ui/).
+02| Open Automation Connection and configure your n8n production webhook URL.
+03| Enter the announcement title and message.
+04| Select All Students or Specific Classroom.
+05| Choose the academic year, branch, and division if required.
+06| Select immediate or scheduled publishing.
+07| Review the announcement using the live preview.
+08| Confirm the production approval checkbox.
+09| Click Publish Notice to submit the request.
 
-- **Vanilla JavaScript:** lightweight, with no framework or build step, ideal for static hosting.
-- **n8n:** visual automation for connecting external services.
-- **Google Sheets:** an easily editable student data source.
-- **GitHub Pages:** free static hosting deployed straight from the repository.
+Use the Clear Form option to reset the announcement form.
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+«[!IMPORTANT]
+Publishing a request to the webhook does not necessarily mean that all student notifications have been delivered. Delivery depends on the configured n8n workflow.»
 
 ---
 
-## Architecture
+06. Technology Stack
 
-The frontend collects, validates, and forwards data. Recipient lookup and delivery are handled by n8n.
+Technology| Purpose
+HTML5| Frontend structure
+CSS3| Styling and responsive interface
+JavaScript| Application logic and validation
+n8n| Workflow automation
+Google Sheets| Student data source
+Webhooks| Frontend-to-workflow communication
+JSON| Structured data exchange
+GitHub Pages| Static application hosting
+Git & GitHub| Version control and collaboration
 
-```mermaid
+Why This Technology Stack?
+
+Vanilla JavaScript
+
+Keeps the application lightweight without requiring a frontend framework or complex build process.
+
+n8n Automation
+
+Provides a visual automation environment for connecting external services and processing announcement requests.
+
+Google Sheets
+
+Provides a configurable data source for student information through automation workflows.
+
+GitHub Pages
+
+Enables straightforward hosting of the static frontend directly from the repository.
+
+---
+
+07. System Architecture
+
+Campus Autopilot follows a frontend-to-workflow integration architecture.
+
+High-Level Architecture
+
 flowchart TD
     A["Administrator"] --> B["Campus Autopilot Interface"]
     B --> C["Input Validation"]
-    C --> D["Audience & Publishing Configuration"]
-    D --> E["Approval Confirmation"]
-    E --> F["JSON Request (HTTP POST)"]
-    F --> G["n8n Webhook"]
-    G --> H["Workflow Processing"]
-    H --> I["Google Sheets Lookup"]
-    I --> J["Recipient Identification"]
-    J --> K["Notification Service"]
-    K --> L["Students"]
-```
+    C --> D["Audience Configuration"]
+    D --> E["Publishing Configuration"]
+    E --> F["Approval Confirmation"]
+    F --> G["JSON Request"]
+    G --> H["HTTP POST"]
+    H --> I["n8n Webhook"]
+    I --> J["Workflow Processing"]
+    J --> K["Google Sheets Lookup"]
+    K --> L["Recipient Identification"]
+    L --> M["Notification Service"]
+    M --> N["Students"]
 
-| Component | Responsibility |
-|:--|:--|
-| Administrator | Creates, configures, and approves announcements |
-| Frontend | Collects and validates input, shows the live preview |
-| Webhook | Transfers structured data |
-| n8n | Executes the configured automation |
-| Google Sheets | Provides student records |
-| Notification Service | Handles distribution (for example email) |
+    style A fill:#2563EB,color:#fff
+    style I fill:#EA4B71,color:#fff
+    style N fill:#16A34A,color:#fff
 
-### Data Flow
+Architecture Components
 
-1. The administrator writes a notice.
-2. The frontend validates input and updates the preview.
-3. Audience and schedule preferences are set.
-4. The administrator approves the notice.
-5. The app sends a JSON request to the webhook.
-6. n8n receives and processes the announcement.
-7. Student records are retrieved from Google Sheets.
-8. Notification integrations handle delivery.
+Component| Responsibility
+Administrator| Creates and approves announcements
+Frontend| Collects input and performs validation
+Audience Configuration| Defines intended recipients
+Webhook| Transfers structured data
+n8n| Executes automation workflows
+Google Sheets| Provides student records
+Notification Service| Handles configured distribution
 
-> [!NOTE]
-> Actual recipient identification and delivery depend on the deployed n8n workflow.
+Data Flow
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+1. The administrator creates a notice.
+2. JavaScript validates the submitted information.
+3. Audience and publishing preferences are configured.
+4. The administrator approves the announcement.
+5. The frontend sends a JSON request to the configured webhook.
+6. n8n receives and processes the request.
+7. Student information can be retrieved from Google Sheets.
+8. Configured notification integrations handle distribution.
+
+«[!NOTE]
+Recipient lookup and notification delivery depend on the actual n8n workflow configuration.»
 
 ---
 
-## Application Workflow
+08. Application Workflow
 
-```mermaid
+The application follows a structured announcement publishing process.
+
 flowchart TD
-    A(["Start"]) --> B["Enter Notice Details"]
-    B --> C{"Select Audience"}
-    C -->|All Students| D["All Students"]
-    C -->|Specific Classroom| E["Year, Branch, Division"]
-    D --> F{"Publishing Preference"}
-    E --> F
-    F -->|Immediate| H["Prepare Request"]
-    F -->|Scheduled| G["Choose Date & Time"]
-    G --> I["Validate Schedule"]
-    I --> H
-    H --> P["Approval Confirmation"]
-    P --> J["Send HTTP Request"]
-    J --> K["n8n Workflow Execution"]
-    K --> L["Return Response"]
-    L --> M(["End"])
-```
+    A(["Start"]) --> B["Create Announcement"]
+    B --> C["Enter Notice Details"]
+    C --> D{"Select Audience"}
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+    D -->|All Students| E["Entire Student Audience"]
+    D -->|Specific Classroom| F["Select Year, Branch and Division"]
+
+    E --> G{"Publishing Mode"}
+    F --> G
+
+    G -->|Immediate| H["Prepare Publishing Request"]
+    G -->|Scheduled| I["Choose Date and Time"]
+
+    I --> J["Validate Schedule"]
+    J --> H
+
+    H --> K["Approval Confirmation"]
+    K --> L["Send HTTP POST Request"]
+    L --> M["n8n Webhook"]
+    M --> N["Workflow Execution"]
+    N --> O["Return Response"]
+    O --> P(["End"])
 
 ---
 
-## Project Structure
+09. Project Structure
 
-```text
 campus-autopilot-ui/
-├── index.html    # Main application interface
-├── style.css     # Styling and responsive design
-├── script.js     # Application logic, validation, webhook integration
-└── README.md     # Project documentation
-```
+│
+├── index.html
+│   └── Main application interface
+│
+├── style.css
+│   └── UI styling and responsive design
+│
+├── script.js
+│   └── Application logic, validation and webhook integration
+│
+└── README.md
+    └── Project documentation
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+The project follows a simple frontend architecture with a clear separation of structure, presentation, and application logic.
 
 ---
 
-## Getting Started
+10. Getting Started
 
-### Prerequisites
+Prerequisites
 
-- Git
-- A modern web browser
-- Visual Studio Code (recommended)
-- An n8n Cloud or self-hosted instance (required to deliver notices)
+- Git installed on your system.
+- A modern web browser.
+- Visual Studio Code (recommended).
+- n8n Cloud or a self-hosted n8n instance for automation.
 
-### Installation
+Step 1: Clone the Repository
 
-```bash
 git clone https://github.com/Atharva1118/campus-autopilot-ui.git
+
+Step 2: Navigate to the Project
+
 cd campus-autopilot-ui
+
+Step 3: Open in Visual Studio Code
+
 code .
-```
 
-### Run Locally
+Step 4: Run the Application
 
-Open `index.html` in a browser, or use the **Live Server** extension in VS Code and select **Open with Live Server**.
+Open "index.html" directly in your browser.
 
-No dependency installation or build command is required.
+Alternatively, install the Live Server extension in Visual Studio Code and select:
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+Open with Live Server
 
----
-
-## Deployment
-
-The project is a static site and deploys to GitHub Pages with no build step.
-
-1. Push the project to a GitHub repository.
-2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Select the `main` branch and the `/ (root)` folder, then save.
-5. After a minute or two, the site is live at `https://<username>.github.io/campus-autopilot-ui/`.
-
-Current deployment: **https://atharva1118.github.io/campus-autopilot-ui/**
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+No frontend dependency installation or build command is required for the current implementation.
 
 ---
 
-## n8n Integration
+11. Deployment
 
-1. Open n8n and create a new workflow.
-2. Add a **Webhook** node with HTTP method `POST`.
-3. Configure the expected request data.
-4. Copy the **production** webhook URL.
-5. Paste it into the **Automation connection** panel and click **Save connection**.
-6. Activate the workflow.
-7. Send a test announcement.
+Campus Autopilot is a static frontend application and can be deployed through GitHub Pages.
 
-```mermaid
+Deployment Steps
+
+1. Push the project to your GitHub repository.
+2. Open repository Settings.
+3. Navigate to Pages.
+4. Under Build and Deployment, select Deploy from a branch.
+5. Select the "main" branch.
+6. Select the "/ (root)" directory.
+7. Click Save.
+8. Wait for GitHub Pages to complete deployment.
+
+Live Deployment
+
+"https://atharva1118.github.io/campus-autopilot-ui/" (https://atharva1118.github.io/campus-autopilot-ui/)
+
+---
+
+12. n8n Integration
+
+Campus Autopilot communicates with n8n through an HTTP webhook.
+
+Configuration Steps
+
+1. Open your n8n workspace.
+2. Create a new workflow.
+3. Add a Webhook node.
+4. Configure the HTTP method as "POST".
+5. Configure the expected request data.
+6. Copy the production webhook URL.
+7. Open Campus Autopilot.
+8. Paste the URL into the Automation Connection panel.
+9. Save the connection.
+10. Activate the n8n workflow.
+11. Submit a test announcement.
+
+Workflow Architecture
+
 flowchart LR
-    A["Campus Autopilot"] --> B["n8n Webhook"]
-    B --> C["Validate Request"]
-    C --> D["Process Announcement"]
-    D --> E["Google Sheets Lookup"]
-    E --> F["Identify Recipients"]
-    F --> G["Send Notifications"]
-    G --> H["Workflow Result"]
-```
+    A["Campus Autopilot"] --> B["HTTP POST"]
+    B --> C["n8n Webhook"]
+    C --> D["Validate Request"]
+    D --> E["Process Announcement"]
+    E --> F["Google Sheets Lookup"]
+    F --> G["Identify Recipients"]
+    G --> H["Notification Integration"]
+    H --> I["Workflow Result"]
 
-The workflow can be extended with more n8n nodes for email, messaging, and other services, including scheduled delivery (for example with a Wait node).
+The workflow can be extended using additional n8n nodes to support:
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+- Email notifications.
+- Messaging integrations.
+- Student record lookup.
+- Scheduled delivery.
+- Workflow execution logging.
+
+The actual integrations depend on the configured workflow.
 
 ---
 
-## API Reference
+13. API Reference
 
-| Property | Value |
-|:--|:--|
-| Method | `POST` |
-| Content-Type | `application/json` |
-| Endpoint | Your n8n webhook URL |
+Campus Autopilot uses HTTP POST requests to communicate with the configured n8n webhook.
 
-### Example Payload
+Request Configuration
 
-```json
+Parameter| Value
+Method| "POST"
+Content-Type| "application/json"
+Endpoint| Configured n8n webhook URL
+Data Format| JSON
+
+Example JSON Payload
+
 {
   "title": "Important Academic Announcement",
   "message": "Students are informed about the upcoming academic activity.",
@@ -477,119 +447,130 @@ The workflow can be extended with more n8n nodes for email, messaging, and other
   "scheduledTime": "",
   "source": "Campus Autopilot"
 }
-```
 
-> [!NOTE]
-> This is an illustrative example. The actual payload should match the fields generated by `script.js`.
+«[!NOTE]
+This is an illustrative payload. The actual request structure must match the fields and values generated by "script.js".»
 
-The workflow can use this data to validate the announcement, determine the audience, retrieve matching students, run notification flows, and return an execution response.
+Expected Workflow Processing
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+The n8n workflow can use the received information to:
 
----
-
-## Security Notes
-
-Campus systems may handle student information, so security matters from the start.
-
-- Validate incoming webhook requests
-- Add authentication for administrative access
-- Never expose private API credentials in frontend code
-- Restrict access to student data
-- Configure appropriate CORS policies
-- Protect webhook endpoints from unauthorized requests
-- Keep execution logs for troubleshooting
-- Verify delivery independently of webhook acceptance
-
-> [!WARNING]
-> The webhook URL is stored in the browser's local storage, which is **not** a secure secret. Avoid shared devices with a production URL. Production deployments should use an authenticated backend.
-
-> [!CAUTION]
-> Production mode can email real students. Test with a sample Google Sheet containing only your own address before connecting real data.
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+- Validate announcement details.
+- Identify the intended audience.
+- Retrieve matching student records.
+- Execute configured notification workflows.
+- Return a workflow response.
 
 ---
 
-## Roadmap
+14. Security Notes
 
-### Implemented
+Security and reliability are essential for applications handling institutional communication and student information.
 
-- [x] Notice creation with title and message fields
-- [x] Live character counters and notice preview
-- [x] Audience, year, branch, and division selection
-- [x] Immediate and scheduled publishing with validation
+Recommended Security Practices
+
+- Validate incoming webhook requests.
+- Implement authentication for administrative access.
+- Avoid exposing private API credentials in frontend code.
+- Restrict access to student information.
+- Configure appropriate CORS policies.
+- Protect webhook endpoints against unauthorized requests.
+- Maintain workflow execution logs.
+- Verify notification delivery independently of webhook acceptance.
+
+«[!WARNING]
+The webhook URL is stored in browser local storage, which is not a secure secret store. Production deployments should use an authenticated backend or an appropriate access-control mechanism.»
+
+«[!CAUTION]
+Test the workflow using sample student data and your own email address before enabling notifications for real students.»
+
+---
+
+15. Roadmap
+
+Current Implementation
+
+- [x] Notice creation interface
+- [x] Title and message fields
+- [x] Live character counters
+- [x] Real-time notice preview
+- [x] Audience selection
+- [x] Academic year selection
+- [x] Branch and division selection
+- [x] Immediate publishing option
+- [x] Scheduled publishing interface
+- [x] Date and time validation
 - [x] Final approval confirmation
-- [x] Webhook configuration and HTTP integration
+- [x] Webhook configuration
+- [x] HTTP request integration
 - [x] GitHub Pages deployment
 
-### Planned
+Planned Enhancements
 
 - [ ] Secure administrator authentication
 - [ ] Role-based access management
 - [ ] Centralized backend and database
 - [ ] Notice history and editing
 - [ ] Notification delivery tracking
-- [ ] Email and mobile notification integration
+- [ ] Email notification integration
+- [ ] Mobile notification integration
 - [ ] Document and PDF attachments
 - [ ] Analytics dashboard
-- [ ] Audit logs
+- [ ] Administrative audit logs
 - [ ] Student-specific notifications
 
-### Long-Term Vision
+Long-Term Vision
 
-| Area | Goal |
-|:--|:--|
-| Dashboard | One place to manage all institutional communication |
-| Audience management | Richer segmentation with configurable filters |
-| Multi-channel | Email, messaging platforms, and more |
-| Analytics | Insight into announcement activity and delivery |
-| Administration | Authentication, authorization, and activity tracking |
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
+Area| Planned Development
+Centralized Dashboard| Unified campus communication management
+Smart Audience Management| Advanced student segmentation
+Multi-Channel Communication| Email and messaging integrations
+Analytics| Announcement and delivery insights
+Administration| Secure authentication and authorization
 
 ---
 
-## Contributing
+16. Contributing
 
-Contributions and suggestions are welcome.
+Contributions, suggestions, and improvements are welcome.
 
-1. Fork the repository
-2. Create a feature branch
-3. Make and test your changes
-4. Submit a pull request with a clear description
+Contribution Guidelines
+
+1. Fork the repository.
+2. Create a new feature branch.
+3. Implement your changes.
+4. Test the updated functionality.
+5. Submit a pull request with a clear description.
 
 For major changes, please open an issue first to discuss your proposal.
 
-<p align="right"><a href="#top">⬆ Back to top</a></p>
-
 ---
 
-## Author
+17. Author
 
-<div align="center">
+<div align="center">Atharva Ghorpade
 
-**Atharva Ghorpade**
-B.Tech Computer Science and Engineering
+B.Tech Computer Science & Engineering
 
-[
+<br/><a href="https://github.com/Atharva1118">
+  <img src="https://img.shields.io/badge/GitHub-Atharva1118-181717?style=for-the-badge&logo=github" alt="GitHub"/>
+</a>
+<a href="https://www.linkedin.com/in/atharva-ghorpade-45842732b/">
+  <img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin" alt="LinkedIn"/>
+</a><br/><br/>
 
-![GitHub](https://img.shields.io/badge/GitHub-Atharva1118-181717?style=for-the-badge&logo=github)
+Project Links
 
-](https://github.com/Atharva1118)
-[
+"Live Application" (https://atharva1118.github.io/campus-autopilot-ui/) · "GitHub Repository" (https://github.com/Atharva1118/campus-autopilot-ui)
 
-![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin)
+</div>---
 
-](https://www.linkedin.com/in/atharva-ghorpade-45842732b/)
+<div align="center">CAMPUS AUTOPILOT
 
-<br/>
+Intelligent Automation for a Connected Campus.
 
-**CAMPUS AUTOPILOT**
-*Intelligent Automation for a Connected Campus.*
+Designed and developed to simplify institutional communication through technology.
 
-[Live Demo](https://atharva1118.github.io/campus-autopilot-ui/) · [Repository](https://github.com/Atharva1118/campus-autopilot-ui)
+<br/><a href="#top">⬆ Back to Top</a>
 
 </div>
-
-<p align="right"><a href="#top">⬆ Back to top</a></p>
