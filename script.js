@@ -15,8 +15,7 @@ const STORAGE_KEYS = {
     announcementWebhook: "campus_autopilot_announcement_webhook"
 };
 
-const DEFAULT_ANNOUNCEMENT_WEBHOOK =
-    "https://campus-autopilot.app.n8n.cloud/webhook/c494a389-57d5-4e97-84c1-dc37fdbca64e";
+const DEFAULT_ANNOUNCEMENT_WEBHOOK = "";
 
 const SEND_MODE = "production";
 const TIMEZONE = "Asia/Kolkata";
@@ -155,11 +154,9 @@ let isSubmitting = false;
 ========================================================= */
 
 function getAnnouncementWebhook() {
-    const savedWebhook = localStorage.getItem(
+    return localStorage.getItem(
         STORAGE_KEYS.announcementWebhook
-    );
-
-    return savedWebhook || DEFAULT_ANNOUNCEMENT_WEBHOOK;
+    ) || "";
 }
 
 function saveAnnouncementWebhook() {
