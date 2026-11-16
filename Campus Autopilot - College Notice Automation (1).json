@@ -1,0 +1,1378 @@
+{
+  "name": "Campus Autopilot - College Notice Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c494a389-57d5-4e97-84c1-dc37fdbca64e",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://atharva1118.github.io"
+        }
+      },
+      "id": "656866d1-3a9b-4352-9788-2f0ad11922f1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        32
+      ],
+      "webhookId": "c494a389-57d5-4e97-84c1-dc37fdbca64e"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n/* =========================================================\n   CAMPUS AUTOPILOT — VALIDATE FORM FIELDS\n   Version: 2026-11-04-v4\n   Mode: Run Once for Each Item\n========================================================= */\n\n\"use strict\";\n\n// ---------------------------------------------------------\n// 1. READ WEBHOOK INPUT\n// ---------------------------------------------------------\n\nconst input = $json;\n\nlet body = input;\nlet bodyParseError = \"\";\n\nif (typeof input.body === \"string\") {\n  try {\n    body = JSON.parse(input.body);\n  } catch (error) {\n    body = {};\n    bodyParseError = \"Invalid JSON received from webhook.\";\n  }\n} else if (\n  input.body &&\n  typeof input.body === \"object\" &&\n  !Array.isArray(input.body)\n) {\n  body = input.body;\n}\n\nif (!body || typeof body !== \"object\" || Array.isArray(body)) {\n  body = {};\n}\n\n// Read fields from parsed body or original input.\nfunction getField(...keys) {\n  for (const source of [body, input]) {\n    if (!source || typeof source !== \"object\") continue;\n\n    for (const key of keys) {\n      const value = source[key];\n\n      if (\n        value !== undefined &&\n        value !== null &&\n        String(value).trim() !== \"\"\n      ) {\n        return value;\n      }\n    }\n  }\n\n  return \"\";\n}\n\n// ---------------------------------------------------------\n// 2. YEAR MAPPING\n// ---------------------------------------------------------\n\nconst yearMap = {\n  \"FY\": 1,\n  \"SY\": 2,\n  \"TY\": 3,\n  \"Final Year\": 4\n};\n\n// ---------------------------------------------------------\n// 3. BRANCH AND DIVISION MAPPING\n// ---------------------------------------------------------\n\nconst allowedDivisions = {\n  1: {\n    CSE: [\"A\", \"B\", \"C\"],\n    \"CSE-DS\": [\"D\"],\n    \"CSE-AIML\": [\"E\", \"F\"],\n    ENTC: [\"G\"],\n    Chemical: [\"H\"],\n    Civil: [\"I\"],\n    Mechanical: [\"J\"]\n  },\n  2: {\n    CSE: [\"A\", \"B\", \"C\"],\n    \"CSE-DS\": [\"A\", \"B\"],\n    \"CSE-AIML\": [\"A\", \"B\"],\n    ENTC: [\"A\", \"B\"],\n    Chemical: [\"A\", \"B\"],\n    Civil: [\"A\", \"B\"],\n    Mechanical: [\"A\", \"B\"]\n  },\n  3: {\n    CSE: [\"A\", \"B\", \"C\"],\n    \"CSE-DS\": [\"A\", \"B\"],\n    \"CSE-AIML\": [\"A\", \"B\"],\n    ENTC: [\"A\", \"B\"],\n    Chemical: [\"A\", \"B\"],\n    Civil: [\"A\", \"B\"],\n    Mechanical: [\"A\", \"B\"]\n  },\n  4: {\n    CSE: [\"A\", \"B\", \"C\"],\n    \"CSE-DS\": [\"A\", \"B\"],\n    \"CSE-AIML\": [\"A\", \"B\"],\n    ENTC: [\"A\", \"B\"],\n    Chemical: [\"A\", \"B\"],\n    Civil: [\"A\", \"B\"],\n    Mechanical: [\"A\", \"B\"]\n  }\n};\n\n// ---------------------------------------------------------\n// 4. EXTRACT FORM DATA\n// ---------------------------------------------------------\n\nconst title = String(\n  getField(\"Title\", \"title\")\n).trim();\n\nconst message = String(\n  getField(\"Message\", \"message\")\n).trim();\n\nconst year = String(\n  getField(\"Year\", \"academicYear\", \"year\")\n).trim();\n\nconst mappedYear = yearMap[year] || 0;\n\nconst suppliedYearNumber = getField(\n  \"Year Number\",\n  \"year_num\",\n  \"year_number\"\n);\n\nconst yearNum =\n  suppliedYearNumber === \"\"\n    ? mappedYear\n    : Number(suppliedYearNumber);\n\nconst branch = String(\n  getField(\"Branch\", \"branch\")\n).trim();\n\nconst division = String(\n  getField(\"Division\", \"division\")\n).trim().toUpperCase();\n\nconst recipientType = String(\n  getField(\"Recipient Type\", \"recipient_type\")\n).trim().toLowerCase();\n\nconst sendMode = String(\n  getField(\"Send Mode\", \"send_mode\")\n).trim().toLowerCase();\n\nconst publishMode = String(\n  getField(\"Publish Mode\", \"publish_mode\")\n).trim().toLowerCase();\n\nconst scheduledDate = String(\n  getField(\n    \"Scheduled Date\",\n    \"Schedule Date\",\n    \"scheduled_date\"\n  )\n).trim();\n\nconst scheduledTime = String(\n  getField(\n    \"Scheduled Time\",\n    \"Schedule Time\",\n    \"scheduled_time\"\n  )\n).trim();\n\nconst timezone = String(\n  getField(\"Timezone\", \"timezone\") || \"Asia/Kolkata\"\n).trim();\n\n// ---------------------------------------------------------\n// 5. PRODUCTION CONFIRMATION\n// ---------------------------------------------------------\n\nconst confirmationKeys = [\n  \"production_confirmed\",\n  \"productionConfirmed\",\n  \"Production Confirmed\",\n  \"production-confirmed\"\n];\n\nconst confirmationValues = [];\n\nfor (const source of [body, input]) {\n  if (!source || typeof source !== \"object\") continue;\n\n  for (const key of confirmationKeys) {\n    if (\n      Object.prototype.hasOwnProperty.call(source, key)\n    ) {\n      confirmationValues.push({\n        key,\n        value: source[key]\n      });\n    }\n  }\n}\n\nfunction isExplicitTrue(value) {\n  if (value === true || value === 1) {\n    return true;\n  }\n\n  if (typeof value === \"string\") {\n    return [\"true\", \"1\", \"yes\", \"on\"].includes(\n      value.trim().toLowerCase()\n    );\n  }\n\n  return false;\n}\n\nconst productionConfirmed = confirmationValues.some(\n  item => isExplicitTrue(item.value)\n);\n\nconst productionRequested = sendMode === \"production\";\n\n// This node records confirmation only.\n// It does not grant live-send authorization.\n\nconst liveSendAuthorized = false;\nconst liveBroadcastAuthorized = false;\n\n// ---------------------------------------------------------\n// 6. VALIDATION\n// ---------------------------------------------------------\n\nconst errors = [];\n\nif (bodyParseError) {\n  errors.push(bodyParseError);\n}\n\nif (!title) {\n  errors.push(\"Title is required.\");\n}\n\nif (title.length > 120) {\n  errors.push(\"Title exceeds 120 characters.\");\n}\n\nif (!message) {\n  errors.push(\"Message is required.\");\n}\n\nif (message.length > 5000) {\n  errors.push(\"Message exceeds 5000 characters.\");\n}\n\nif (recipientType !== \"classroom\") {\n  errors.push(\n    \"Only specific classroom announcements are supported.\"\n  );\n}\n\nif (!mappedYear) {\n  errors.push(\"Invalid academic year.\");\n}\n\nif (mappedYear && yearNum !== mappedYear) {\n  errors.push(\n    \"Academic year and year number do not match.\"\n  );\n}\n\nconst allowedBranches = [\n  \"CSE\",\n  \"CSE-DS\",\n  \"CSE-AIML\",\n  \"ENTC\",\n  \"Chemical\",\n  \"Civil\",\n  \"Mechanical\"\n];\n\nif (!allowedBranches.includes(branch)) {\n  errors.push(\"Invalid branch.\");\n}\n\nconst validDivisions =\n  allowedDivisions[mappedYear]?.[branch] || [];\n\nif (!division) {\n  errors.push(\"Division is required.\");\n} else if (!validDivisions.includes(division)) {\n  errors.push(\n    \"Invalid division for selected year and branch.\"\n  );\n}\n\nif (![\"production\", \"test\"].includes(sendMode)) {\n  errors.push(\"Invalid send mode.\");\n}\n\nif (![\"immediate\", \"scheduled\"].includes(publishMode)) {\n  errors.push(\"Invalid publishing mode.\");\n}\n\nif (productionRequested && !productionConfirmed) {\n  errors.push(\"Production confirmation is required.\");\n}\n\n// ---------------------------------------------------------\n// 7. SCHEDULE VALIDATION\n// ---------------------------------------------------------\n\nif (publishMode === \"scheduled\") {\n  if (!scheduledDate || !scheduledTime) {\n    errors.push(\n      \"Schedule date and time are required.\"\n    );\n  }\n\n  if (\n    scheduledDate &&\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(scheduledDate)\n  ) {\n    errors.push(\"Invalid schedule date format.\");\n  }\n\n  if (\n    scheduledTime &&\n    !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(scheduledTime)\n  ) {\n    errors.push(\"Invalid schedule time format.\");\n  }\n\n  if (\n    /^\\d{4}-\\d{2}-\\d{2}$/.test(scheduledDate) &&\n    /^([01]\\d|2[0-3]):[0-5]\\d$/.test(scheduledTime)\n  ) {\n    const parsedDate = new Date(\n      `${scheduledDate}T${scheduledTime}:00+05:30`\n    );\n\n    const datePart = new Date(\n      `${scheduledDate}T00:00:00Z`\n    );\n\n    if (\n      Number.isNaN(datePart.getTime()) ||\n      datePart.toISOString().slice(0, 10) !== scheduledDate\n    ) {\n      errors.push(\"Invalid calendar date.\");\n    } else if (Number.isNaN(parsedDate.getTime())) {\n      errors.push(\"Invalid schedule date or time.\");\n    } else if (parsedDate.getTime() <= Date.now()) {\n      errors.push(\n        \"Scheduled time must be in the future.\"\n      );\n    }\n  }\n}\n\nif (\n  publishMode === \"immediate\" &&\n  ((scheduledDate && !scheduledTime) ||\n   (!scheduledDate && scheduledTime))\n) {\n  errors.push(\"Incomplete schedule information.\");\n}\n\n// ---------------------------------------------------------\n// 8. FINAL VALIDATION\n// ---------------------------------------------------------\n\nconst valid = errors.length === 0;\n\n// ---------------------------------------------------------\n// 9. BUILD NOTICE TEXT\n// ---------------------------------------------------------\n\nlet noticeText = String(\n  getField(\"Notice Text\", \"notice_text\") ||\n  `Title: ${title}\\n\\n${message}`\n);\n\nif (publishMode === \"scheduled\") {\n  noticeText +=\n    `\\n\\nScheduled Date: ${scheduledDate}` +\n    `\\nScheduled Time: ${scheduledTime}` +\n    `\\nTimezone: ${timezone}`;\n}\n\n// ---------------------------------------------------------\n// 10. RETURN OUTPUT\n// ---------------------------------------------------------\n\nreturn {\n  json: {\n    valid,\n    errors,\n\n    title,\n    message,\n    notice_text: noticeText,\n\n    year,\n    year_label: year,\n    year_num: mappedYear,\n\n    branch,\n    division,\n\n    recipient_type: recipientType,\n    audience:\n      getField(\"Audience\", \"audience\") ||\n      \"Specific Classroom\",\n\n    publish_mode: publishMode,\n\n    scheduled_date: scheduledDate || null,\n    scheduled_time: scheduledTime || null,\n\n    timezone,\n\n    send_mode: sendMode,\n    test_mode: sendMode === \"test\",\n\n    production_requested: productionRequested,\n    production_confirmed: productionConfirmed,\n\n    live_send_authorized: liveSendAuthorized,\n    live_broadcast_authorized: liveBroadcastAuthorized,\n\n    source:\n      getField(\"Source\", \"source\") ||\n      \"Campus Autopilot Website\",\n\n    submitted_at:\n      getField(\"Submitted At\", \"submitted_at\") ||\n      new Date().toISOString(),\n\n    original_payload: body,\n\n    debug: {\n      validation_code_version: \"2026-11-04-v4\",\n\n      received_year: year,\n      mapped_year_number: mappedYear,\n      received_year_number: suppliedYearNumber,\n\n      received_branch: branch,\n      received_division: division,\n      received_send_mode: sendMode,\n\n      received_production_confirmation:\n        confirmationValues,\n\n      parsed_production_confirmation:\n        productionConfirmed,\n\n      confirmation_source_count:\n        confirmationValues.length,\n\n      validation_error_count: errors.length,\n\n      body_was_parsed:\n        typeof input.body === \"string\",\n\n      body_parse_error: bodyParseError,\n      received_body_type: typeof input.body,\n\n      extracted_title: title,\n      extracted_message_length: message.length,\n      extracted_recipient_type: recipientType,\n      extracted_publish_mode: publishMode\n    }\n  }\n};\n"
+      },
+      "id": "0e342e34-5633-4864-a69f-e24c1d3cc707",
+      "name": "Validate Form Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "164e9616-f337-4353-bab6-05868e8a49ae",
+      "name": "Form Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Announcement accepted\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "5460d352-ea61-4bb7-bafd-55282ee03cdb",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1072,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-haiku-5-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert assistant that extracts structured information from college announcements.\n\nINPUT NOTICE TITLE:\n{{ $(\"Validate Form Fields\").item.json.title }}\n\nINPUT NOTICE TEXT:\n{{ $(\"Validate Form Fields\").item.json.notice_text }}\n\nTASK:\nExtract all relevant information from the college announcement and return it using the exact JSON structure provided below.\n\nSTRICT RULES:\n\n1. Return exactly ONE complete, valid JSON object.\n2. Do not return Markdown, code fences, explanations, comments, or thinking.\n3. Never invent, assume, or guess missing information.\n4. Use null for unavailable or unstated values.\n5. Do not omit any required JSON field.\n6. Use YYYY-MM-DD for dates.\n7. Use 24-hour HH:mm format for times.\n8. Preserve the original meaning of the announcement.\n9. The title must come from the input notice title.\n10. Description must contain the relevant announcement or event details.\n11. Extract the actual event start date and time.\n12. Extract the actual event end date and time only when available. Otherwise use null.\n13. Extract venue, branch, year, and division only when supported by the notice.\n14. Extract URLs into the links array. Return [] if there are no URLs.\n15. The summary must be a concise summary of the announcement.\n16. Do not confuse the notice publication date with the event date.\n17. Do not assume an event duration or end time.\n18. Ensure every JSON string is properly escaped.\n19. Ensure the final JSON object has its closing brace.\n20. Do not stop generating before all fields are completed.\n\nREQUIRED OUTPUT STRUCTURE:\n\n{\n  \"event_type\": null,\n  \"title\": null,\n  \"description\": null,\n  \"venue\": null,\n  \"branch\": null,\n  \"year\": null,\n  \"division\": null,\n  \"start_date\": null,\n  \"start_time\": null,\n  \"end_date\": null,\n  \"end_time\": null,\n  \"deadline\": null,\n  \"links\": [],\n  \"summary\": null\n}\n\nFINAL CHECK BEFORE RESPONDING:\n- All 14 fields are present.\n- The JSON is syntactically valid.\n- The response is complete.\n- The response contains JSON only.\n\nReturn the JSON object now."
+            }
+          ]
+        },
+        "options": {
+          "system": "You extract structured data from college notices. Return ONLY one JSON object, no markdown, with exactly these keys: event_type, title, description, venue, branch, year, division, start_date (YYYY-MM-DD), start_time (HH:mm 24h), end_date (YYYY-MM-DD), end_time (HH:mm 24h), deadline, links (array of strings), summary. Use null for anything not explicitly stated in the notice. Never invent dates, times, or venues. Resolve relative dates like \"tomorrow\" using the provided current date only when the notice states them.",
+          "maxTokens": 4000
+        }
+      },
+      "id": "f8199593-dac1-45c9-86c9-dfe34e20800a",
+      "name": "AI Extract Notice Fields",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        -80
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "anthropicApi": {
+          "id": null,
+          "name": "Gateway credits",
+          "__aiGatewayManaged": true
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n\"use strict\";\n\n// =====================================================\n// 1. GET ORIGINAL FORM DATA\n// =====================================================\n\nconst form = $(\"Validate Form Fields\").item.json;\nconst j = $json;\n\n// =====================================================\n// 2. REQUIRED EXTRACTION FIELDS\n// =====================================================\n\nconst keys = [\n  \"event_type\",\n  \"title\",\n  \"description\",\n  \"venue\",\n  \"branch\",\n  \"year\",\n  \"division\",\n  \"start_date\",\n  \"start_time\",\n  \"end_date\",\n  \"end_time\",\n  \"deadline\",\n  \"links\",\n  \"summary\"\n];\n\nconst clean = {};\n\nkeys.forEach(key => {\n  clean[key] = null;\n});\n\nclean.links = [];\n\n// =====================================================\n// 3. READ AI RESPONSE\n// =====================================================\n\nlet raw = \"\";\n\nif (j.error) {\n  raw = \"\";\n} else if (Array.isArray(j.content)) {\n  const textBlock = j.content.find(\n    block => block.type === \"text\"\n  );\n\n  raw = textBlock?.text || \"\";\n} else {\n  raw = j.text || j.output || \"\";\n}\n\n// =====================================================\n// 4. PARSE AI JSON\n// =====================================================\n\nlet ai = null;\nlet aiOk = false;\nlet aiError = null;\n\nif (j.error) {\n  aiError =\n    \"AI service error: \" +\n    (j.error.message || JSON.stringify(j.error)).slice(0, 200);\n\n} else if (!raw.trim()) {\n  aiError = \"AI response was empty\";\n\n} else {\n  try {\n    const cleaned = String(raw)\n      .replace(/^\\uFEFF/, \"\")\n      .replace(/^\\s*```(?:json)?\\s*/i, \"\")\n      .replace(/\\s*```\\s*$/, \"\")\n      .trim();\n\n    const parsed = JSON.parse(cleaned);\n\n    if (\n      parsed &&\n      typeof parsed === \"object\" &&\n      !Array.isArray(parsed)\n    ) {\n      ai = parsed;\n      aiOk = true;\n    } else {\n      aiError = \"AI response was not a JSON object\";\n    }\n\n  } catch (error) {\n    aiError =\n      \"AI response was incomplete or invalid JSON: \" +\n      error.message;\n  }\n}\n\n// =====================================================\n// 5. COPY EXTRACTED FIELDS\n// =====================================================\n\nif (aiOk) {\n  keys.forEach(key => {\n    if (ai[key] !== undefined) {\n      clean[key] = ai[key];\n    }\n  });\n}\n\n// =====================================================\n// 6. VALIDATE DATE AND TIME FORMATS\n// =====================================================\n\nconst dateOk = value => {\n  if (\n    typeof value !== \"string\" ||\n    !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)\n  ) {\n    return false;\n  }\n\n  const date = new Date(value + \"T00:00:00Z\");\n\n  return !Number.isNaN(date.getTime()) &&\n    date.toISOString().slice(0, 10) === value;\n};\n\nconst timeOk = value => {\n  if (\n    typeof value !== \"string\" ||\n    !/^\\d{2}:\\d{2}$/.test(value)\n  ) {\n    return false;\n  }\n\n  const [hours, minutes] = value.split(\":\").map(Number);\n\n  return hours >= 0 &&\n    hours <= 23 &&\n    minutes >= 0 &&\n    minutes <= 59;\n};\n\n// Validate dates\nif (!dateOk(clean.start_date)) {\n  clean.start_date = null;\n}\n\nif (!dateOk(clean.end_date)) {\n  clean.end_date = null;\n}\n\nif (!dateOk(clean.deadline)) {\n  clean.deadline = null;\n}\n\n// Validate times\nif (!timeOk(clean.start_time)) {\n  clean.start_time = null;\n}\n\nif (!timeOk(clean.end_time)) {\n  clean.end_time = null;\n}\n\n// Validate links\nif (!Array.isArray(clean.links)) {\n  clean.links = [];\n}\n\n// =====================================================\n// 7. FORM DATE AND TIME TAKE PRIORITY\n// =====================================================\n\nif (dateOk(form.scheduled_date)) {\n  clean.start_date = form.scheduled_date;\n}\n\nif (timeOk(form.scheduled_time)) {\n  clean.start_time = form.scheduled_time;\n}\n\n// =====================================================\n// 8. VALIDATE REQUIRED EVENT INFORMATION\n// =====================================================\n\nconst nonEmptyString = value =>\n  typeof value === \"string\" &&\n  value.trim().length > 0;\n\nconst requiredFieldsPresent =\n  aiOk &&\n  nonEmptyString(clean.title) &&\n  nonEmptyString(clean.description) &&\n  nonEmptyString(clean.venue) &&\n  dateOk(clean.start_date) &&\n  timeOk(clean.start_time) &&\n  dateOk(clean.end_date) &&\n  timeOk(clean.end_time);\n\n// =====================================================\n// 9. CHECK EVENT TIME RANGE\n// =====================================================\n\nlet validTimeRange = false;\n\nif (\n  dateOk(clean.start_date) &&\n  timeOk(clean.start_time) &&\n  dateOk(clean.end_date) &&\n  timeOk(clean.end_time)\n) {\n  const start = new Date(\n    `${clean.start_date}T${clean.start_time}:00+05:30`\n  );\n\n  const end = new Date(\n    `${clean.end_date}T${clean.end_time}:00+05:30`\n  );\n\n  validTimeRange =\n    !Number.isNaN(start.getTime()) &&\n    !Number.isNaN(end.getTime()) &&\n    end > start;\n}\n\n// =====================================================\n// 10. FINAL AI VALIDATION STATUS\n// =====================================================\n\nconst finalAiOk =\n  requiredFieldsPresent &&\n  validTimeRange;\n\nif (aiOk && !requiredFieldsPresent) {\n  aiError =\n    \"AI extraction incomplete: title, description, venue, or event date/time is missing or invalid.\";\n\n} else if (requiredFieldsPresent && !validTimeRange) {\n  aiError =\n    \"Invalid event time range: end must be after start.\";\n}\n\n// =====================================================\n// 11. RETURN RESULT\n// =====================================================\n\nreturn {\n  json: Object.assign({}, form, {\n    ai_ok: finalAiOk,\n    ai_error: aiError,\n    extracted: clean,\n    debug: Object.assign({}, form.debug || {}, {\n      parser_version: \"2026-11-04-v5\",\n      ai_response_received: Boolean(raw),\n      ai_response_length: raw.length,\n      ai_json_valid: aiOk,\n      required_event_fields_present: requiredFieldsPresent,\n      valid_event_time_range: validTimeRange\n    })\n  })\n};\n"
+      },
+      "id": "81f116c0-1dc8-4a5d-bf77-2641e07d9009",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "13xh_36WFLCp3ySDyBxL5Qe5OTc5y5YXypnC8vzK7Q3Y",
+          "mode": "list",
+          "cachedResultName": "Campus Autopilot — Student Directory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13xh_36WFLCp3ySDyBxL5Qe5OTc5y5YXypnC8vzK7Q3Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Students"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "9a6dfa52-c121-466d-aacb-046322ff5c6b",
+      "name": "Get Row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2208,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "76wJochRPmrJpbkr",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n/* =========================================================\n   CAMPUS AUTOPILOT\n   Filter Classroom Students\n   Mode: Run Once for All Items\n   ========================================================= */\n\n// 1. Get all student records from Google Sheets\nconst rows = $input.all().map(item => item.json);\n\n// 2. Get classroom criteria from Validate Form Fields\nlet criteria;\n\ntry {\n    criteria = $(\"Validate Form Fields\").first().json;\n} catch (error) {\n    return [{\n        json: {\n            success: false,\n            error: \"Unable to read Validate Form Fields node\",\n            details: error.message,\n            received_rows: rows.length\n        }\n    }];\n}\n\n// 3. Read and normalize criteria\nconst targetYear = Number(criteria.year_num);\n\nconst targetBranch = String(criteria.branch || \"\")\n    .trim()\n    .toUpperCase();\n\nconst targetDivision = String(criteria.division || \"\")\n    .trim()\n    .toUpperCase();\n\n// 4. Validate criteria\nif (\n    !Number.isFinite(targetYear) ||\n    !targetBranch ||\n    !targetDivision\n) {\n    return [{\n        json: {\n            success: false,\n            error: \"Invalid classroom selection\",\n            criteria: {\n                year_num: criteria.year_num,\n                branch: criteria.branch,\n                division: criteria.division\n            },\n            received_rows: rows.length\n        }\n    }];\n}\n\n// 5. Filter matching students\nconst matchedStudents = rows.filter(student => {\n\n    const studentYear = Number(student.Year);\n\n    const studentBranch = String(student.Branch || \"\")\n        .trim()\n        .toUpperCase();\n\n    const studentDivision = String(student.Division || \"\")\n        .trim()\n        .toUpperCase();\n\n    const email = String(student.Email || \"\").trim();\n\n    return (\n        studentYear === targetYear &&\n        studentBranch === targetBranch &&\n        studentDivision === targetDivision &&\n        email !== \"\"\n    );\n});\n\n// 6. Return a diagnostic item if no students match\nif (matchedStudents.length === 0) {\n    return [{\n        json: {\n            success: false,\n            message: \"No students found for the selected classroom\",\n            criteria: {\n                year_num: targetYear,\n                branch: targetBranch,\n                division: targetDivision\n            },\n            available_rows: rows.length,\n            matched_students: 0\n        }\n    }];\n}\n\n// 7. Return one output item per matching student\nreturn matchedStudents.map(student => ({\n    json: {\n        success: true,\n        roll_no: student.Roll_No,\n        name: student.Name,\n        email: String(student.Email).trim(),\n        year: Number(student.Year),\n        branch: student.Branch,\n        division: student.Division\n    }\n}));\n"
+      },
+      "id": "bd89d2f4-cf14-4816-a5f5-babc2c7d09f6",
+      "name": "Filter Classroom Students",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n/* =========================================================\n   CAMPUS AUTOPILOT\n   VALIDATE AND DEDUPLICATE RECIPIENTS\n   Version: Production-safe recipient validation\n\n   INPUT:\n   Filter Classroom Students\n\n   CONTEXT:\n   Parse AI Response\n\n   TEST MODE:\n   Sends only to project owner's Gmail.\n\n   PRODUCTION MODE:\n   Sends only to matching students.\n   Excludes owner's Gmail.\n   Requires explicit production confirmation.\n   ========================================================= */\n\n\"use strict\";\n\n// =========================================================\n// 1. CONFIGURATION\n// =========================================================\n\nconst OWNER_EMAIL = \"ghorpadeatharva87@gmail.com\";\nconst MAX_RECIPIENTS = 300;\n\nconst normalize = value =>\n  String(value ?? \"\")\n    .trim()\n    .toLowerCase()\n    .replace(/\\s+/g, \" \");\n\nconst normalizeDivision = value =>\n  normalize(value)\n    .replace(/^division\\s*/, \"\")\n    .replace(/^div\\s*/, \"\")\n    .replace(/[^a-z0-9]/g, \"\");\n\nconst normalizeYear = value => {\n  const v = normalize(value).replace(/[^a-z0-9]/g, \"\");\n\n  const map = {\n    sy: \"2\",\n    secondyear: \"2\",\n    second: \"2\",\n    ndyear: \"2\",\n    ty: \"3\",\n    thirdyear: \"3\",\n    third: \"3\",\n    finalyear: \"4\",\n    fourthyear: \"4\",\n    fourth: \"4\",\n    fy: \"1\",\n    firstyear: \"1\",\n    first: \"1\",\n    \"2\": \"2\",\n    \"3\": \"3\",\n    \"4\": \"4\",\n    \"1\": \"1\"\n  };\n\n  return map[v] || v;\n};\n\nconst normalizeBranch = value => {\n  const v = normalize(value)\n    .replace(/[^a-z0-9]/g, \"\");\n\n  const aliases = {\n    cse: \"cse\",\n    computerscience: \"cse\",\n    computerscienceandengineering: \"cse\",\n    cs: \"cse\",\n\n    cseds: \"cse-ds\",\n    csdatascience: \"cse-ds\",\n    computersciencedatascience: \"cse-ds\",\n    cseai: \"cse-aiml\",\n    cseaiml: \"cse-aiml\",\n    computerscienceandengineeringaiml: \"cse-aiml\",\n\n    entc: \"entc\",\n    electronicsandtelecommunication: \"entc\",\n    electronicsandtelecommunicationengineering: \"entc\",\n\n    mechanical: \"mechanical\",\n    mechanicalengineering: \"mechanical\",\n\n    civil: \"civil\",\n    civilengineering: \"civil\"\n  };\n\n  return aliases[v] || v;\n};\n\nconst validEmail = email =>\n  /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n\n\n// =========================================================\n// 2. READ ORIGINAL NOTICE CONTEXT\n// =========================================================\n\nlet ctx;\n\ntry {\n  ctx = $(\"Parse AI Response\").first().json;\n} catch (error) {\n  throw new Error(\n    \"Cannot read Parse AI Response node. Check its node name.\"\n  );\n}\n\nconst extracted = ctx.extracted || {};\n\n\n// =========================================================\n// 3. READ STUDENT DATA\n// =========================================================\n\nconst inputItems = $input.all();\n\nconst rawRows = inputItems.map(item => item.json);\n\n// Support records containing nested student objects.\n\nconst students = [];\n\nfor (const row of rawRows) {\n  if (!row || typeof row !== \"object\") continue;\n  if (row.error || row.success === false) continue;\n\n  const nested =\n    row.student ||\n    row.data ||\n    row.record ||\n    row;\n\n  if (Array.isArray(nested)) {\n    students.push(...nested);\n  } else if (nested && typeof nested === \"object\") {\n    students.push(nested);\n  }\n}\n\n\n// =========================================================\n// 4. FLEXIBLE FIELD EXTRACTION\n// =========================================================\n\nfunction getField(obj, aliases) {\n  if (!obj || typeof obj !== \"object\") return \"\";\n\n  const keys = Object.keys(obj);\n\n  for (const alias of aliases) {\n    const key = keys.find(\n      k => normalize(k).replace(/[^a-z0-9]/g, \"\") ===\n           normalize(alias).replace(/[^a-z0-9]/g, \"\")\n    );\n\n    if (key !== undefined && obj[key] !== null) {\n      return obj[key];\n    }\n  }\n\n  return \"\";\n}\n\nfunction getStudentBranch(student) {\n  return getField(student, [\n    \"branch\",\n    \"Branch\",\n    \"department\",\n    \"Department\",\n    \"course\",\n    \"Course\"\n  ]);\n}\n\nfunction getStudentYear(student) {\n  return getField(student, [\n    \"year\",\n    \"Year\",\n    \"year_label\",\n    \"year_num\",\n    \"year_number\",\n    \"academic_year\",\n    \"Academic Year\",\n    \"class\"\n  ]);\n}\n\nfunction getStudentDivision(student) {\n  return getField(student, [\n    \"division\",\n    \"Division\",\n    \"div\",\n    \"Div\",\n    \"section\",\n    \"Section\"\n  ]);\n}\n\nfunction getStudentEmail(student) {\n  return getField(student, [\n    \"email\",\n    \"Email\",\n    \"student_email\",\n    \"Student Email\",\n    \"email_address\",\n    \"Email Address\",\n    \"email_id\",\n    \"E-mail\"\n  ]);\n}\n\nfunction getStudentName(student) {\n  return getField(student, [\n    \"name\",\n    \"Name\",\n    \"student_name\",\n    \"Student Name\",\n    \"full_name\"\n  ]);\n}\n\n\n// =========================================================\n// 5. SELECTED CLASS INFORMATION\n// =========================================================\n\nconst selectedBranch = normalizeBranch(\n  ctx.branch || ctx.extracted?.branch\n);\n\nconst selectedYear = normalizeYear(\n  ctx.year_num ??\n  ctx.year_label ??\n  ctx.year ??\n  ctx.extracted?.year\n);\n\nconst selectedDivision = normalizeDivision(\n  ctx.division || ctx.extracted?.division\n);\n\n\n// =========================================================\n// 6. MATCH STUDENTS\n// =========================================================\n\nconst matchedStudents = students.filter(student => {\n\n  const branch = normalizeBranch(\n    getStudentBranch(student)\n  );\n\n  const year = normalizeYear(\n    getStudentYear(student)\n  );\n\n  const division = normalizeDivision(\n    getStudentDivision(student)\n  );\n\n  return (\n    branch === selectedBranch &&\n    year === selectedYear &&\n    division === selectedDivision\n  );\n});\n\n\n// =========================================================\n// 7. VALIDATE AND DEDUPLICATE EMAILS\n// =========================================================\n\nconst emailMap = new Map();\n\nfor (const student of matchedStudents) {\n\n  const email = normalize(\n    getStudentEmail(student)\n  );\n\n  if (!validEmail(email)) continue;\n\n  if (!emailMap.has(email)) {\n    emailMap.set(email, {\n      email,\n      name: getStudentName(student) || \"\"\n    });\n  }\n}\n\nconst uniqueRecipients = Array.from(\n  emailMap.values()\n);\n\n\n// =========================================================\n// 8. EXCLUDE PROJECT OWNER\n// =========================================================\n\nconst studentRecipients = uniqueRecipients.filter(\n  recipient =>\n    normalize(recipient.email) !== normalize(OWNER_EMAIL)\n);\n\n\n// =========================================================\n// 9. DETERMINE EXECUTION MODE\n// =========================================================\n\nconst testMode = ctx.test_mode === true;\n\nconst productionRequested =\n  ctx.production_requested === true ||\n  normalize(ctx.form_mode) === \"production\" ||\n  normalize(ctx.send_mode) === \"production\";\n\nconst productionConfirmed =\n  ctx.production_confirmed === true;\n\n\n// =========================================================\n// 10. BUILD RECIPIENT LIST\n// =========================================================\n\nlet recipients = [];\n\nif (testMode) {\n\n  // Test emails go only to project owner.\n\n  recipients = [{\n    email: OWNER_EMAIL,\n    name: \"Campus Autopilot Owner\"\n  }];\n\n} else if (\n  productionRequested &&\n  productionConfirmed\n) {\n\n  // Production emails go only to matched students.\n\n  recipients = studentRecipients.map(student => ({\n    email: student.email,\n    name: student.name\n  }));\n\n}\n\n\n// =========================================================\n// 11. VALIDATE NOTICE CONTENT\n// =========================================================\n\nconst noticeTitle = String(\n  extracted.title ||\n  ctx.title ||\n  ctx.original_payload?.Title ||\n  \"\"\n).trim();\n\nconst noticeText = String(\n  ctx.notice_text ||\n  ctx.message ||\n  ctx.original_payload?.Message ||\n  \"\"\n).trim();\n\nconst aiReliable =\n  !!noticeTitle &&\n  !!noticeText;\n\n\n// =========================================================\n// 12. VALIDATE GOOGLE SHEETS DATA\n// =========================================================\n\nconst sheetError = rawRows.some(row =>\n  row &&\n  (\n    row.error ||\n    row.success === false\n  )\n);\n\n\n// =========================================================\n// 13. GENERATE BLOCKERS\n// =========================================================\n\nconst blockers = [];\n\nif (!selectedBranch) {\n  blockers.push(\"Missing selected branch\");\n}\n\nif (!selectedYear) {\n  blockers.push(\"Missing selected year\");\n}\n\nif (!selectedDivision) {\n  blockers.push(\"Missing selected division\");\n}\n\nif (sheetError) {\n  blockers.push(\"Google Sheets returned an error\");\n}\n\nif (!testMode && matchedStudents.length === 0) {\n  blockers.push(\n    \"No students found for the selected class\"\n  );\n}\n\nif (!testMode && studentRecipients.length === 0) {\n  blockers.push(\n    \"No valid student email recipients available\"\n  );\n}\n\nif (recipients.length === 0) {\n  blockers.push(\"No active recipients available\");\n}\n\nif (!aiReliable) {\n  blockers.push(\n    \"Notice title or message is missing\"\n  );\n}\n\nif (recipients.length > MAX_RECIPIENTS) {\n  blockers.push(\n    `Recipient limit exceeded: maximum ${MAX_RECIPIENTS}`\n  );\n}\n\nif (!testMode && !productionRequested) {\n  blockers.push(\n    \"Production mode was not requested\"\n  );\n}\n\nif (!testMode && productionRequested && !productionConfirmed) {\n  blockers.push(\n    \"Production confirmation is missing\"\n  );\n}\n\n\n// =========================================================\n// 14. GENERATE NOTICE HASH\n// =========================================================\n\nconst hashInput = [\n  selectedBranch,\n  selectedYear,\n  selectedDivision,\n  normalize(noticeTitle),\n  normalize(noticeText)\n].join(\"|\");\n\nlet hash = 2166136261;\n\nfor (let i = 0; i < hashInput.length; i++) {\n  hash ^= hashInput.charCodeAt(i);\n  hash = Math.imul(hash, 16777619);\n}\n\nconst noticeHash = (hash >>> 0).toString(16);\n\n\n// =========================================================\n// 15. DUPLICATE SUBMISSION CHECK\n// =========================================================\n\nlet duplicateSubmission = false;\n\nif (!testMode) {\n  try {\n    const staticData = $getWorkflowStaticData(\"global\");\n\n    const previous =\n      staticData.campusAutopilotNotices || {};\n\n    duplicateSubmission = !!previous[noticeHash];\n\n  } catch (error) {\n    duplicateSubmission = false;\n  }\n}\n\nif (duplicateSubmission) {\n  blockers.push(\n    \"This notice has already been processed\"\n  );\n}\n\n\n// =========================================================\n// 16. PREFLIGHT DECISION\n// =========================================================\n\nconst preflightOk = blockers.length === 0;\n\nconst needsApproval =\n  !testMode && preflightOk;\n\n\n// =========================================================\n// 17. RECIPIENT SUMMARY\n// =========================================================\n\nconst recipientSummary = {\n  test_mode: testMode,\n\n  owner_email_included: recipients.some(\n    r => normalize(r.email) === normalize(OWNER_EMAIL)\n  ),\n\n  student_recipients_only: !testMode,\n\n  matched_student_count: matchedStudents.length,\n\n  valid_student_count: studentRecipients.length,\n\n  recipient_count: recipients.length,\n\n  production_requested: productionRequested,\n\n  production_confirmed: productionConfirmed\n};\n\n\n// =========================================================\n// 18. DEBUG INFORMATION\n// =========================================================\n\nconst debugRecipientMatching = {\n  input_item_count: inputItems.length,\n\n  extracted_student_count: students.length,\n\n  matched_student_count: matchedStudents.length,\n\n  valid_student_count: studentRecipients.length,\n\n  selected_branch: selectedBranch,\n\n  selected_year: selectedYear,\n\n  selected_division: selectedDivision,\n\n  first_student: students[0] || null,\n\n  first_student_normalized: students[0] ? {\n    branch: normalizeBranch(\n      getStudentBranch(students[0])\n    ),\n\n    year: normalizeYear(\n      getStudentYear(students[0])\n    ),\n\n    division: normalizeDivision(\n      getStudentDivision(students[0])\n    ),\n\n    email: normalize(\n      getStudentEmail(students[0])\n    )\n  } : null,\n\n  matching_success: matchedStudents.length > 0\n};\n\n\n// =========================================================\n// 19. FINAL OUTPUT\n// =========================================================\n\nreturn [{\n  json: {\n    ...ctx,\n\n    recipients,\n\n    student_recipients: studentRecipients,\n\n    matched_student_count: matchedStudents.length,\n\n    valid_student_count: studentRecipients.length,\n\n    recipient_count: recipients.length,\n\n    notice_hash: noticeHash,\n\n    duplicate_submission: duplicateSubmission,\n\n    test_mode: testMode,\n\n    production_requested: productionRequested,\n\n    production_confirmed: productionConfirmed,\n\n    preflight_ok: preflightOk,\n\n    needs_approval: needsApproval,\n\n    live_send_authorized: false,\n\n    live_broadcast_authorized: false,\n\n    blockers,\n\n    validation_errors: blockers,\n\n    recipient_summary: recipientSummary,\n\n    debug_recipient_matching: debugRecipientMatching\n  }\n}];\n"
+      },
+      "id": "31645df0-cc99-4e51-a102-4616edcb0570",
+      "name": "Validate and Deduplicate Recipients",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "na",
+              "leftValue": "={{ $json.needs_approval }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "82fa3dad-a359-4123-9236-d1af8498b05e",
+      "name": "Needs Production Approval?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "ghorpadeatharva87@gmail.com",
+        "subject": "=[APPROVAL REQUIRED] Send notice to {{ $json.branch }} {{ $json.year_label }} Div {{ $json.division }} ({{ $json.class_recipient_count }} students)",
+        "message": "=A production class broadcast was requested.<br><br><b>Class:</b> {{ $json.branch }} / {{ $json.year_label }} / Division {{ $json.division }}<br><b>Students who will be emailed:</b> {{ $json.class_recipient_count }}<br><b>Invalid emails skipped:</b> {{ $json.invalid_emails.length }}<br><b>Duplicates removed:</b> {{ $json.duplicate_emails_removed }}<br><br><b>Notice:</b><br>{{ String($json.notice_text).replace(/</g, \"&lt;\").slice(0, 1500) }}<br><br>Click the button only if you are the authorized faculty member and want this sent to every student above. Ignoring this email sends nothing.",
+        "approvalOptions": {
+          "values": {
+            "approveLabel": "Approve and send to class"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 60,
+              "resumeUnit": "minutes"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "id": "f0609884-9377-4827-b661-69453ce93468",
+      "name": "Request Faculty Approval",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3104,
+        -160
+      ],
+      "webhookId": "6fc70363-e7f7-4200-8bd4-a4f43163a5ae",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bUqnUD7YU1PkPvuV",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst ctx = $('Validate and Deduplicate Recipients').first().json;\n\nconst inp = $input.first()\n  ? $input.first().json\n  : {};\n\nlet approved = false;\nlet status = '';\n\nif (!ctx.needs_approval) {\n  status = ctx.test_mode\n    ? 'NOT_REQUIRED_TEST_MODE'\n    : 'NOT_REQUESTED_PREFLIGHT_FAILED';\n} else if (inp.error) {\n  status = 'APPROVAL_ERROR';\n} else if (inp.data && inp.data.approved === true) {\n  approved = true;\n  status = 'APPROVED';\n} else {\n  status = 'DECLINED_OR_TIMED_OUT';\n}\n\nconst live = !ctx.test_mode &&\n  approved &&\n  ctx.preflight_ok === true &&\n  ctx.production_confirmed === true;\n\nconst calendarAllowed =\n  live ||\n  (\n    ctx.test_mode === true &&\n    ctx.preflight_ok === true &&\n    ctx.test_calendar_enabled === true\n  );\n\nreturn [\n  {\n    json: {\n      ...ctx,\n      approval_status: status,\n      approval_granted: approved,\n      live_send_authorized: live,\n      live_broadcast_authorized: live,\n      calendar_allowed: calendarAllowed\n    }\n  }\n];\n"
+      },
+      "id": "c510921b-6212-4e35-bdaa-ec080b80f4f5",
+      "name": "Apply Authorization Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        -80
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "399d2dab-55f3-44cc-96d2-c03ba53291f9",
+              "leftValue": "={{ Boolean($json.extracted?.start_date && $json.extracted?.start_time) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "29339d79-31c8-4ea8-9e7d-a0b3673e168a",
+      "name": "Has Schedule?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3664,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "ghorpadeatharva87@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ghorpadeatharva87@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ DateTime.fromISO(\n  $json.extracted.start_date + \"T\" + $json.extracted.start_time,\n  { zone: \"Asia/Kolkata\" }\n).toUTC().toISO() }}",
+        "timeMax": "={{ DateTime.fromISO(\n  ($json.extracted.end_date || $json.extracted.start_date) +\n  \"T\" +\n  ($json.extracted.end_time || $json.extracted.start_time),\n  { zone: \"Asia/Kolkata\" }\n).plus(\n  $json.extracted.end_time ? {} : { hours: 1 }\n).toUTC().toISO() }}",
+        "options": {
+          "timeZone": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Asia/Kolkata"
+          }
+        }
+      },
+      "id": "f67f4487-39ea-4359-b11f-9ead1e050f41",
+      "name": "Check Calendar Conflicts",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        3888,
+        -160
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "yE7A8dEbeeXTnl23",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Apply Authorization Decision').first().json;\nconst e = ctx.extracted || {};\nconst scheduled = !!(e.start_date && e.start_time);\nconst endKnown = !!(e.end_time);\nconst sufficient = scheduled && !!e.title;\nconst startISO = scheduled ? e.start_date + 'T' + e.start_time + ':00+05:30' : null;\nconst endDate = e.end_date || e.start_date;\nlet endISO = null;\nif (scheduled) {\n  if (endKnown) endISO = endDate + 'T' + e.end_time + ':00+05:30';\n  else { const d = new Date(startISO); d.setHours(d.getHours() + 1); endISO = d.toISOString(); }\n}\nconst startMs = scheduled ? new Date(startISO).getTime() : NaN;\nconst endMs = scheduled ? new Date(endISO).getTime() : NaN;\nconst invalidRange = scheduled && (isNaN(startMs) || isNaN(endMs) || endMs <= startMs);\n\nlet events = []; let checkFailed = false;\nif (scheduled) {\n  try {\n    const all = $('Check Calendar Conflicts').all().map(i => i.json);\n    if (all.some(x => x && x.error)) checkFailed = true;\n    events = all.filter(x => x && x.id && x.status !== 'cancelled');\n  } catch (err) { checkFailed = true; }\n}\nconst toMs = v => { if (!v) return NaN; return String(v).length === 10 ? new Date(v + 'T00:00:00+05:30').getTime() : new Date(v).getTime(); };\nconst norm = s => String(s || '').trim().toLowerCase();\nlet conflicts = []; let existing = null;\nif (scheduled && !invalidRange) {\n  for (const x of events) {\n    const s = toMs(x.start && (x.start.dateTime || x.start.date));\n    const en = toMs(x.end && (x.end.dateTime || x.end.date));\n    if (isNaN(s) || isNaN(en)) continue;\n    // Genuine overlap only: the existing event must start before our end AND end after our start\n    if (s < endMs && en > startMs) {\n      const c = { id: x.id, summary: x.summary || '(no title)', start: x.start && (x.start.dateTime || x.start.date), end: x.end && (x.end.dateTime || x.end.date), link: x.htmlLink || null };\n      conflicts.push(c);\n      if (!existing && norm(x.summary) === norm(e.title) && Math.abs(s - startMs) < 60000) existing = c;\n    }\n  }\n}\nconst can_create_event = sufficient && !invalidRange && !checkFailed && conflicts.length === 0 && ctx.calendar_allowed === true && ctx.preflight_ok === true;\nreturn [{ json: Object.assign({}, ctx, { scheduled, calendar_conflicts: conflicts, has_conflict: conflicts.length > 0, duplicate_event: !!existing, existing_event: existing, calendar_check_failed: checkFailed, event_time_sufficient: sufficient, end_time_assumed: scheduled && !endKnown, invalid_time_range: invalidRange, can_create_event, event_start: startISO, event_end: endISO, timezone: 'Asia/Kolkata' }) }];"
+      },
+      "id": "5cfbcfa0-a33f-4b3a-a7c2-1744bfaff498",
+      "name": "Evaluate Calendar Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4112,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cc",
+              "leftValue": "={{ $json.can_create_event }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4c2b3ed2-b879-4d39-acba-813580bdf2b0",
+      "name": "Can Create Event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4448,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ghorpadeatharva87@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ghorpadeatharva87@gmail.com"
+        },
+        "start": "={{ $json.event_start }}",
+        "end": "={{ $json.event_end }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $json.recipients.map(r => r.email).join(\",\") }}"
+          ],
+          "description": "={{ $json.extracted.summary || $json.notice_text }}",
+          "guestsCanInviteOthers": false,
+          "guestsCanSeeOtherGuests": false,
+          "id": "={{ ($json.test_mode ? \"tst\" : \"cap\") + $json.notice_hash }}",
+          "location": "={{ $json.extracted.venue || \"\" }}",
+          "sendUpdates": "all",
+          "summary": "={{ $json.extracted.title }}"
+        }
+      },
+      "id": "38bddf59-6aa7-4bf5-8562-36fe53859fbb",
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        4672,
+        -160
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "yE7A8dEbeeXTnl23",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n/* =========================================================\n   CAMPUS AUTOPILOT\n   Generate Notification and Preview\n   - Test: owner Gmail only\n   - Production: selected students only\n   - Never include owner Gmail in production\n   ========================================================= */\n\nconst c = $('Evaluate Calendar Result').first().json;\nconst e = c.extracted || {};\n\nconst OWNER_EMAIL = 'ghorpadeatharva87@gmail.com';\nconst NL = String.fromCharCode(10);\n\nconst MON = [\n  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',\n  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'\n];\n\nconst normalize = v => String(v || '').trim().toLowerCase();\n\nconst esc = s => String(s == null ? '' : s)\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;')\n  .replace(/'/g, '&#39;');\n\nconst fmtD = d => {\n  const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(d || '');\n\n  return m\n    ? (\n        parseInt(m[3], 10) + ' ' +\n        MON[parseInt(m[2], 10) - 1] + ' ' +\n        m[1]\n      )\n    : null;\n};\n\n// ---------------------------------------------------------\n// 1. FINAL RECIPIENT SAFETY CHECK\n// ---------------------------------------------------------\n\nconst incomingRecipients = Array.isArray(c.recipients)\n  ? c.recipients\n  : [];\n\nconst studentSource = Array.isArray(c.student_recipients)\n  ? c.student_recipients\n  : incomingRecipients;\n\nlet recipients = [];\n\nif (c.test_mode === true) {\n  // Test invitations and emails go only to owner.\n  recipients = incomingRecipients.some(\n    r => normalize(r.email) === normalize(OWNER_EMAIL)\n  )\n    ? [{ email: OWNER_EMAIL }]\n    : [];\n} else {\n  // Production recipients are students only.\n  const unique = new Map();\n\n  for (const r of studentSource) {\n    const email = normalize(r.email);\n\n    if (\n      email &&\n      email !== normalize(OWNER_EMAIL) &&\n      /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)\n    ) {\n      unique.set(email, { ...r, email });\n    }\n  }\n\n  recipients = Array.from(unique.values());\n}\n\nconst recipientCount = recipients.length;\nconst classRecipientCount = Array.isArray(c.student_recipients)\n  ? c.student_recipients.filter(\n      r => normalize(r.email) !== normalize(OWNER_EMAIL)\n    ).length\n  : recipientCount;\n\n// ---------------------------------------------------------\n// 2. CALENDAR EVENT RESULT\n// ---------------------------------------------------------\n\nlet created = null;\nlet createdId = null;\nlet calErr = null;\n\nif (c.can_create_event === true) {\n  try {\n    const ev = $('Create Calendar Event').all()[0];\n\n    if (ev && ev.json && ev.json.error) {\n      calErr = String(\n        ev.json.error.message || JSON.stringify(ev.json.error)\n      ).slice(0, 200);\n    } else if (ev && ev.json && ev.json.id) {\n      created = ev.json.htmlLink || null;\n      createdId = ev.json.id;\n    } else {\n      calErr = 'Calendar returned no event ID';\n    }\n  } catch (err) {\n    calErr = 'Calendar node did not run or returned an error';\n  }\n}\n\nlet calStatus;\nlet calReason = null;\n\nlet calId = createdId;\nlet calLink = created;\n\nif (c.can_create_event === true) {\n  calStatus = (created || createdId) ? 'SUCCESS' : 'FAILED';\n\n  if (calErr) {\n    calReason = calErr;\n  }\n} else {\n  calStatus = 'SKIPPED';\n\n  if (!c.scheduled) {\n    calReason = 'Notice has no start date and start time';\n  } else if (!e.title) {\n    calReason = 'Missing event title';\n  } else if (c.invalid_time_range) {\n    calReason = 'End time is not later than start time';\n  } else if (c.calendar_check_failed) {\n    calReason = 'Calendar conflict check failed';\n  } else if (c.duplicate_event) {\n    calReason = 'Same event already exists; duplicate prevented';\n\n    calId = c.existing_event?.id || null;\n    calLink = c.existing_event?.link || null;\n  } else if (c.has_conflict) {\n    calReason = 'Overlapping event: ' +\n      (c.calendar_conflicts || [])\n        .map(x => x.summary)\n        .join(', ');\n  } else if (c.calendar_allowed !== true) {\n    calReason = c.test_mode\n      ? 'Test calendar creation is not enabled'\n      : 'Calendar creation requires approved production authorization';\n  } else if (!c.preflight_ok) {\n    calReason = 'Pre-send checks failed';\n  } else {\n    calReason = 'Scheduling details incomplete';\n  }\n}\n\n// ---------------------------------------------------------\n// 3. NOTICE DETAILS\n// ---------------------------------------------------------\n\nconst startD = fmtD(e.start_date);\nconst endD = fmtD(e.end_date);\n\nlet dateStr = null;\n\nif (startD) {\n  dateStr = endD && endD !== startD\n    ? startD + ' to ' + endD\n    : startD;\n}\n\nlet timeStr = null;\n\nif (e.start_time) {\n  timeStr = e.start_time +\n    (e.end_time ? ' - ' + e.end_time : '') +\n    ' IST';\n}\n\nconst cat = e.event_type\n  ? String(e.event_type)\n      .replace(/_/g, ' ')\n      .replace(/^./, ch => ch.toUpperCase())\n  : null;\n\nconst title = e.title ||\n  (\n    c.branch + ' ' +\n    c.year_label +\n    ' Div ' + c.division +\n    ' Notice'\n  );\n\nconst links = (\n  Array.isArray(e.links) ? e.links : []\n).filter(\n  l => typeof l === 'string' &&\n       /^https?:[/][/]/i.test(l)\n);\n\nconst instr =\n  e.description && e.description !== e.summary\n    ? e.description\n    : null;\n\n// ---------------------------------------------------------\n// 4. BUILD TEXT AND HTML EMAIL\n// ---------------------------------------------------------\n\nconst T = [];\nconst H = [];\n\nconst hd = t => {\n  T.push('');\n  T.push(t.toUpperCase());\n\n  H.push(\n    '<h3 style=\"margin:18px 0 6px;color:#1a3c6e\">' +\n    esc(t) +\n    '</h3>'\n  );\n};\n\n// Test mode warning\nif (c.test_mode) {\n  const tb =\n    'TEST MODE: This copy is sent only to the test address. ' +\n    'Production will go to ' +\n    classRecipientCount +\n    ' students of ' +\n    c.branch + ' / ' +\n    c.year_label + ' / Division ' +\n    c.division + '.';\n\n  T.push(tb);\n\n  H.push(\n    '<p style=\"background:#fff3cd;border:1px solid #e0c36a;padding:8px\">' +\n    '<b>' + esc(tb) + '</b></p>'\n  );\n}\n\nT.push('Dear __NAME__,');\nH.push('<p>Dear __NAME__,</p>');\n\nT.push('');\nT.push('IMPORTANT ANNOUNCEMENT');\n\nH.push(\n  '<h2 style=\"color:#1a3c6e;margin-bottom:4px\">' +\n  'Important Announcement</h2>'\n);\n\nT.push(title);\n\nH.push(\n  '<p style=\"font-size:16px\"><b>' +\n  esc(title) +\n  '</b></p>'\n);\n\nif (e.summary) {\n  T.push(e.summary);\n  H.push('<p>' + esc(e.summary) + '</p>');\n}\n\n// Notice details\nconst det = [];\n\nif (cat) det.push(['Category', cat]);\nif (dateStr) det.push(['Date', dateStr]);\nif (timeStr) det.push(['Time', timeStr]);\nif (e.venue) det.push(['Venue', e.venue]);\n\ndet.push([\n  'Applicable to',\n  c.branch + ', ' + c.year_label +\n  ', Division ' + c.division\n]);\n\nhd('Notice Details');\n\ndet.forEach(d => {\n  T.push('- ' + d[0] + ': ' + d[1]);\n});\n\nH.push(\n  '<ul>' +\n  det.map(d =>\n    '<li><b>' + esc(d[0]) + ':</b> ' +\n    esc(d[1]) + '</li>'\n  ).join('') +\n  '</ul>'\n);\n\n// Instructions\nif (instr) {\n  hd('Important Instructions');\n  T.push(instr);\n  H.push('<p>' + esc(instr) + '</p>');\n}\n\n// Deadline\nif (e.deadline) {\n  hd('Deadline');\n  T.push(String(e.deadline));\n  H.push('<p>' + esc(e.deadline) + '</p>');\n}\n\n// Calendar link\nif (created) {\n  hd('Calendar Event');\n  T.push(created);\n\n  H.push(\n    '<p><a href=\"' + esc(created) +\n    '\">Open calendar event</a></p>'\n  );\n}\n\n// Important links\nif (links.length) {\n  hd('Important Links');\n\n  links.forEach(l => T.push(l));\n\n  H.push(\n    '<ul>' +\n    links.map(l =>\n      '<li><a href=\"' + esc(l) + '\">' +\n      esc(l) +\n      '</a></li>'\n    ).join('') +\n    '</ul>'\n  );\n}\n\n// Original notice\nhd('Original Notice');\n\nT.push(c.notice_text || '');\n\nH.push(\n  '<blockquote style=\"border-left:3px solid #ccc;margin:0;padding-left:10px;color:#444\">' +\n  esc(c.notice_text || '').split(NL).join('<br>') +\n  '</blockquote>'\n);\n\n// Signature\nT.push('');\nT.push('Regards,');\nT.push('College Administration');\n\nH.push(\n  '<p>Regards,<br><b>College Administration</b></p>'\n);\n\n// ---------------------------------------------------------\n// 5. SUBJECT AND SEND AUTHORIZATION\n// ---------------------------------------------------------\n\nconst subject =\n  (c.test_mode ? '[TEST] ' : '') +\n  '[Campus Notice] ' + title;\n\nconst authorized = c.test_mode === true\n  ? true\n  : (\n      c.live_send_authorized === true &&\n      c.production_confirmed === true\n    );\n\nconst send_allowed =\n  authorized &&\n  c.preflight_ok === true &&\n  recipientCount > 0;\n\n// Block reasons\nconst blockReasons = [];\n\nif (!c.test_mode && !authorized) {\n  blockReasons.push(\n    'Production sending not authorized. Approval status: ' +\n    (c.approval_status || 'UNKNOWN')\n  );\n}\n\nconst existingBlockers =\n  c.blockers || c.preflight_blockers || [];\n\nexistingBlockers.forEach(b => {\n  blockReasons.push(String(b));\n});\n\nif (recipientCount === 0) {\n  blockReasons.push('No valid recipients available');\n}\n\n// ---------------------------------------------------------\n// 6. FINAL OUTPUT\n// ---------------------------------------------------------\n\nconst body = T.join(NL);\n\nconst html =\n  '<div style=\"font-family:Arial,sans-serif;font-size:14px;line-height:1.5;max-width:640px\">' +\n  H.join('') +\n  '</div>';\n\nreturn [\n  {\n    json: {\n      ...c,\n\n      recipients,\n      recipient_count: recipientCount,\n      class_recipient_count: classRecipientCount,\n\n      subject,\n      message_text: body,\n      message_html: html,\n\n      calendar_event_link: calLink,\n      calendar_event_id: calId,\n      calendar_status: calStatus,\n      calendar_reason: calReason,\n\n      send_allowed,\n      block_reasons: blockReasons,\n\n      recipient_summary: {\n        test_mode: c.test_mode === true,\n        owner_email_included: recipients.some(\n          r => normalize(r.email) === normalize(OWNER_EMAIL)\n        ),\n        student_recipients_only: c.test_mode !== true,\n        recipient_count: recipientCount\n      },\n\n      preview: {\n        recipients: recipients.map(r => r.email),\n        recipient_count: recipientCount,\n        subject,\n        message: body\n      }\n    }\n  }\n];\n"
+      },
+      "id": "a32245e5-7e07-4a97-80fa-e76e92fa78a5",
+      "name": "Generate Notification and Preview",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4896,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "sa",
+              "leftValue": "={{ $json.send_allowed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ffb377ad-5828-4cf9-8acc-3f6a9de09211",
+      "name": "Live Send Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5232,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "recipients",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "subject,message_html",
+        "options": {}
+      },
+      "id": "97f050d1-6521-41bd-be63-154c163d646d",
+      "name": "One Item per Recipient",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        5456,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.recipients.email }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message_html.replace(\"__NAME__\", ($json.recipients.name || \"Student\").replace(/[<>&]/g, \"\")) }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Campus Autopilot"
+        }
+      },
+      "id": "692e38dd-fa26-4d6e-9cb5-b95c590205ca",
+      "name": "Send Notification Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        5680,
+        -160
+      ],
+      "webhookId": "4066b156-48c9-4b5f-a686-30d513bf8ea6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bUqnUD7YU1PkPvuV",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n/* =========================================================\n   CAMPUS AUTOPILOT\n   RECORD BROADCAST STATUS\n   - Tracks email results\n   - Tracks calendar results\n   - Records execution logs\n   - Prevents duplicate production broadcasts\n   ========================================================= */\n\nconst m = $('Generate Notification and Preview').first().json;\n\nconst OWNER_EMAIL = 'ghorpadeatharva87@gmail.com';\n\nconst recipients = Array.isArray(m.recipients)\n  ? m.recipients\n  : [];\n\nconst recipientEmails = recipients.map(r => r.email);\n\nconst classCount = Number(\n  m.class_recipient_count ?? m.valid_student_count ?? 0\n);\n\nconst recipientCount = recipients.length;\n\nconst mode = m.test_mode === true ? 'test' : 'production';\n\n// ---------------------------------------------------------\n// 1. GET EMAIL RESULTS\n// ---------------------------------------------------------\n\nlet results = [];\n\nif (m.send_allowed === true) {\n  try {\n    results = $('Send Notification Email').all().map(i => i.json);\n  } catch (err) {\n    results = [];\n  }\n}\n\n// ---------------------------------------------------------\n// 2. BUILD PER-RECIPIENT RESULTS\n// ---------------------------------------------------------\n\nconst perRecipient = m.send_allowed === true\n  ? recipients.map((r, i) => {\n      const res = results[i];\n\n      let err = null;\n\n      if (!res) {\n        err = 'No send result returned';\n      } else if (res.error) {\n        err = String(\n          res.error.message || JSON.stringify(res.error)\n        ).slice(0, 200);\n      }\n\n      return {\n        email: r.email,\n        api_status: err\n          ? 'FAILED'\n          : 'ACCEPTED_BY_GMAIL_API',\n        message_id: res\n          ? res.id || res.messageId || null\n          : null,\n        error: err\n      };\n    })\n  : [];\n\nconst failures = perRecipient\n  .filter(p => p.error)\n  .map(p => p.email + ': ' + p.error);\n\nconst sentCount = perRecipient.filter(\n  p => !p.error\n).length;\n\nconst failedCount = failures.length;\n\n// ---------------------------------------------------------\n// 3. DETERMINE BROADCAST STATUS\n// ---------------------------------------------------------\n\nlet status;\n\nif (m.sheets_error) {\n  status = 'student_lookup_failed';\n} else if (classCount === 0) {\n  status = 'no_matching_students';\n} else if (m.duplicate_submission) {\n  status = 'duplicate_blocked';\n} else if (!m.send_allowed) {\n  status = (\n    !m.test_mode &&\n    m.live_send_authorized !== true &&\n    m.preflight_ok\n  )\n    ? 'authorization_missing'\n    : 'send_blocked';\n} else {\n  status = (\n    m.test_mode ? 'test_' : ''\n  ) + (\n    failedCount > 0\n      ? 'sent_with_failures'\n      : 'sent'\n  );\n}\n\n// ---------------------------------------------------------\n// 4. DETERMINE OVERALL STATUS\n// ---------------------------------------------------------\n\nlet overall;\n\nif (!m.send_allowed) {\n  overall = (\n    (classCount === 0 && !m.sheets_error) ||\n    m.duplicate_submission\n  )\n    ? 'SKIPPED'\n    : 'FAILED';\n} else if (sentCount === 0) {\n  overall = 'FAILED';\n} else if (\n  failedCount > 0 ||\n  sentCount < recipientCount ||\n  m.calendar_status === 'FAILED'\n) {\n  overall = 'PARTIAL_SUCCESS';\n} else {\n  overall = 'SUCCESS';\n}\n\nif (m.test_mode) {\n  overall = 'TEST_' + overall;\n}\n\n// ---------------------------------------------------------\n// 5. BUILD ERROR DETAILS\n// ---------------------------------------------------------\n\nconst errs = [];\n\nerrs.push('MODE=' + mode);\n\nif (!m.test_mode) {\n  errs.push(\n    'Approval: ' + (m.approval_status || 'UNKNOWN')\n  );\n}\n\nif (!m.ai_ok && m.ai_error) {\n  errs.push('AI: ' + m.ai_error);\n}\n\nif (\n  m.calendar_status === 'FAILED' ||\n  m.calendar_status === 'SKIPPED'\n) {\n  errs.push(\n    'Calendar ' +\n    m.calendar_status +\n    ': ' +\n    (m.calendar_reason || '')\n  );\n}\n\nconst blockReasons = Array.isArray(m.block_reasons)\n  ? m.block_reasons\n  : [];\n\nif (!m.send_allowed && blockReasons.length) {\n  errs.push(\n    'Send blocked: ' + blockReasons.join(', ')\n  );\n}\n\nif (m.test_mode && m.send_allowed) {\n  errs.push(\n    'Test mode: only the test address received the email. ' +\n    classCount +\n    ' class recipients were NOT emailed.'\n  );\n}\n\nif (\n  Array.isArray(m.invalid_emails) &&\n  m.invalid_emails.length\n) {\n  errs.push(\n    m.invalid_emails.length +\n    ' invalid email(s) skipped'\n  );\n}\n\nfailures.forEach(f => {\n  errs.push('Email ' + f);\n});\n\n// ---------------------------------------------------------\n// 6. SAVE WORKFLOW LOG\n// ---------------------------------------------------------\n\nconst sd = $getWorkflowStaticData('global');\n\nsd.sent = sd.sent || {};\nsd.log = sd.log || [];\n\n// IMPORTANT:\n// This key must match the duplicate-check key used\n// in Validate and Deduplicate Recipients.\n\nsd.campusAutopilotNotices =\n  sd.campusAutopilotNotices || {};\n\nconst entry = {\n  at: new Date().toISOString(),\n  mode,\n  hash: m.notice_hash || '',\n  status,\n  class_recipients: classCount,\n  sent: sentCount,\n  failed: failedCount,\n  overall_status: overall\n};\n\n// Record a production notice after at least one\n// email is accepted by Gmail.\n\nif (\n  m.send_allowed === true &&\n  !m.test_mode &&\n  sentCount > 0 &&\n  m.notice_hash\n) {\n  sd.campusAutopilotNotices[m.notice_hash] = entry.at;\n  sd.sent[m.notice_hash] = entry.at;\n}\n\nsd.log.push(entry);\n\nif (sd.log.length > 50) {\n  sd.log.shift();\n}\n\n// ---------------------------------------------------------\n// 7. BUILD FINAL EXECUTION REPORT\n// ---------------------------------------------------------\n\nconst preview = m.preview || {};\n\nconst finalRecipients =\n  Array.isArray(preview.recipients)\n    ? preview.recipients\n    : recipientEmails;\n\nreturn [\n  {\n    json: {\n      status,\n      overall_status: overall,\n      mode,\n      test_mode: m.test_mode === true,\n\n      redirected_to_test: !!m.redirected_to_test,\n\n      approval_status: m.approval_status,\n\n      send_blocked_because: blockReasons,\n\n      class_recipient_count: classCount,\n      recipient_count: recipientCount,\n\n      recipients_preview: finalRecipients,\n\n      owner_email_excluded_from_production:\n        m.test_mode === true ||\n        !finalRecipients.some(\n          email =>\n            String(email).trim().toLowerCase() ===\n            OWNER_EMAIL\n        ),\n\n      invalid_emails: m.invalid_emails || [],\n      duplicate_emails_removed:\n        m.duplicate_emails_removed || 0,\n\n      sent_count: sentCount,\n      failed_count: failedCount,\n\n      failures,\n      per_recipient: perRecipient,\n\n      delivery_note:\n        'Sent count means accepted by the Gmail API, not confirmed delivered to the inbox.',\n\n      calendar_status: m.calendar_status,\n      calendar_reason: m.calendar_reason,\n      calendar_event_id: m.calendar_event_id,\n      calendar_event_link: m.calendar_event_link,\n      calendar_conflicts: m.calendar_conflicts || [],\n\n      ai_ok: m.ai_ok,\n      ai_error: m.ai_error,\n\n      subject: m.subject,\n      message_preview: m.message_text || '',\n\n      log_row: {\n        Execution_ID: String($execution.id),\n        Submitted_At: m.submitted_at,\n        Branch: m.branch,\n        Year: m.year_label,\n        Division: m.division,\n\n        Notice_Summary: (\n          (m.extracted && m.extracted.summary) ||\n          m.notice_text ||\n          ''\n        ).slice(0, 300),\n\n        Recipients_Count: classCount,\n        Emails_Sent: sentCount,\n        Emails_Failed: failedCount,\n\n        Calendar_Status: m.calendar_status,\n        Calendar_Event_ID: m.calendar_event_id || '',\n        Calendar_Event_Link: m.calendar_event_link || '',\n\n        Overall_Status: overall,\n\n        Error_Details: errs.join(' | ').slice(0, 900)\n      }\n    }\n  }\n];\n"
+      },
+      "id": "be8b853b-c998-4fdf-9a19-38e59db4f940",
+      "name": "Record Execution Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5904,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W7-Dr4VkGDqSCL-A10fMnswqqfv26C3_FGCElbji76g",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "=\t{{ $json.log_row.Execution_ID }}",
+            "Submitted_At": "={{ $json.log_row.Submitted_At }}",
+            "Branch": "={{ $json.log_row.Branch }}",
+            "Year": "=\t{{ $json.log_row.Year }}",
+            "Division": "=\t{{ $json.log_row.Division }}",
+            "Notice_Summary": "=\t{{ $json.log_row.Notice_Summary }}",
+            "Recipients_Count": "=\t{{ $json.log_row.Recipients_Count }}",
+            "Emails_Sent": "=\t{{ $json.log_row.Emails_Sent }}",
+            "Emails_Failed": "={{ $json.log_row.Emails_Failed }}",
+            "Calendar_Status": "=\t{{ $json.log_row.Calendar_Status }}",
+            "Calendar_Event_ID": "=\t{{ $json.log_row.Calendar_Event_ID }}",
+            "Calendar_Event_Link": "={{ $json.log_row.Calendar_Event_Link }}",
+            "Overall_Status": "=\t{{ $json.log_row.Overall_Status }}",
+            "Error_Details": "=\t{{ $json.log_row.Error_Details }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Submitted_At",
+              "displayName": "Submitted_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Branch",
+              "displayName": "Branch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Year",
+              "displayName": "Year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Division",
+              "displayName": "Division",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice_Summary",
+              "displayName": "Notice_Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recipients_Count",
+              "displayName": "Recipients_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Emails_Sent",
+              "displayName": "Emails_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Emails_Failed",
+              "displayName": "Emails_Failed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calendar_Status",
+              "displayName": "Calendar_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calendar_Event_ID",
+              "displayName": "Calendar_Event_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calendar_Event_Link",
+              "displayName": "Calendar_Event_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Overall_Status",
+              "displayName": "Overall_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Error_Details",
+              "displayName": "Error_Details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9f349334-cda6-499d-b07f-a6578fcb8794",
+      "name": "Log Execution",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6128,
+        -80
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "76wJochRPmrJpbkr",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "status",
+              "value": "rejected_invalid_form",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "errors",
+              "value": "={{ $json.errors.join(\"; \") }}",
+              "type": "string"
+            },
+            {
+              "id": "ef79cbcc-b48d-462f-9770-544eb28698d2",
+              "name": "success",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "352d3ee1-c495-4ac4-99e1-3c7c9b64a4da",
+      "name": "Reject Invalid Submission",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        848,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Invalid announcement data\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "f07e03a2-a219-44c8-8805-8f18ffde19f6",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1072,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W7-Dr4VkGDqSCL-A10fMnswqqfv26C3_FGCElbji76g",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "={{ String($execution.id) }}",
+            "Submitted_At": "={{ $(\"Validate Form Fields\").item.json.submitted_at }}",
+            "Branch": "={{ $(\"Validate Form Fields\").item.json.branch }}",
+            "Year": "={{ $(\"Validate Form Fields\").item.json.year }}",
+            "Division": "={{ $(\"Validate Form Fields\").item.json.division }}",
+            "Notice_Summary": "={{ String($(\"Validate Form Fields\").item.json.notice_text || \"\").slice(0, 300) }}",
+            "Recipients_Count": "={{ 0 }}",
+            "Emails_Sent": "={{ 0 }}",
+            "Emails_Failed": "={{ 0 }}",
+            "Calendar_Status": "NOT_APPLICABLE",
+            "Calendar_Event_ID": "",
+            "Calendar_Event_Link": "",
+            "Overall_Status": "REJECTED_INVALID_FORM",
+            "Error_Details": "={{ $json.errors }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Submitted_At",
+              "displayName": "Submitted_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Branch",
+              "displayName": "Branch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Year",
+              "displayName": "Year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Division",
+              "displayName": "Division",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice_Summary",
+              "displayName": "Notice_Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recipients_Count",
+              "displayName": "Recipients_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Emails_Sent",
+              "displayName": "Emails_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Emails_Failed",
+              "displayName": "Emails_Failed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calendar_Status",
+              "displayName": "Calendar_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calendar_Event_ID",
+              "displayName": "Calendar_Event_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Calendar_Event_Link",
+              "displayName": "Calendar_Event_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Overall_Status",
+              "displayName": "Overall_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Error_Details",
+              "displayName": "Error_Details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "23dcc142-90ea-4d91-80d6-0cc19717d12b",
+      "name": "Log Rejected Submission",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        208
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "76wJochRPmrJpbkr",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Form Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Form Fields": {
+      "main": [
+        [
+          {
+            "node": "Form Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Extract Notice Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extract Notice Fields": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Get Row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter Classroom Students",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Classroom Students": {
+      "main": [
+        [
+          {
+            "node": "Validate and Deduplicate Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Deduplicate Recipients": {
+      "main": [
+        [
+          {
+            "node": "Needs Production Approval?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Production Approval?": {
+      "main": [
+        [
+          {
+            "node": "Request Faculty Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Apply Authorization Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Faculty Approval": {
+      "main": [
+        [
+          {
+            "node": "Apply Authorization Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Authorization Decision": {
+      "main": [
+        [
+          {
+            "node": "Has Schedule?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Schedule?": {
+      "main": [
+        [
+          {
+            "node": "Check Calendar Conflicts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluate Calendar Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Calendar Conflicts": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Calendar Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Calendar Result": {
+      "main": [
+        [
+          {
+            "node": "Can Create Event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Can Create Event?": {
+      "main": [
+        [
+          {
+            "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Notification and Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Generate Notification and Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Notification and Preview": {
+      "main": [
+        [
+          {
+            "node": "Live Send Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Live Send Allowed?": {
+      "main": [
+        [
+          {
+            "node": "One Item per Recipient",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Execution Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Item per Recipient": {
+      "main": [
+        [
+          {
+            "node": "Send Notification Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Notification Email": {
+      "main": [
+        [
+          {
+            "node": "Record Execution Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Execution Status": {
+      "main": [
+        [
+          {
+            "node": "Log Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Invalid Submission": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Log Rejected Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "216226c7-6f3a-48a8-a5b6-a1f141bba4bd",
+  "meta": {
+    "instanceId": "f3661b5d416b70ffb7295033f15c6da39c2b568c002f8f2b6d2c5e57d72492dc"
+  },
+  "nodeGroups": [
+    {
+      "id": "f4bed031-53d6-484f-8caf-b4e0de4fa33e",
+      "name": "Receive notice",
+      "nodeIds": [
+        "0e342e34-5633-4864-a69f-e24c1d3cc707",
+        "164e9616-f337-4353-bab6-05868e8a49ae"
+      ],
+      "description": "Takes the faculty form submission and checks every field and the send mode; incomplete or unconfirmed notices are rejected"
+    },
+    {
+      "id": "1834aad8-3b9e-43c7-83d5-eefe517048e2",
+      "name": "Identify and authorize",
+      "nodeIds": [
+        "f8199593-dac1-45c9-86c9-dfe34e20800a",
+        "81f116c0-1dc8-4a5d-bf77-2641e07d9009",
+        "9a6dfa52-c121-466d-aacb-046322ff5c6b",
+        "31645df0-cc99-4e51-a102-4616edcb0570",
+        "82fa3dad-a359-4123-9236-d1af8498b05e",
+        "f0609884-9377-4827-b661-69453ce93468",
+        "c510921b-6212-4e35-bdaa-ec080b80f4f5",
+        "bd89d2f4-cf14-4816-a5f5-babc2c7d09f6"
+      ],
+      "description": "AI reads the notice, the sheet gives real students for the class, and class-wide sending needs faculty email approval"
+    },
+    {
+      "id": "ed66b3a3-0329-4f44-90f0-53b01167e29a",
+      "name": "Check schedule",
+      "nodeIds": [
+        "29339d79-31c8-4ea8-9e7d-a0b3673e168a",
+        "f67f4487-39ea-4359-b11f-9ead1e050f41",
+        "5cfbcfa0-a33f-4b3a-a7c2-1744bfaff498"
+      ],
+      "description": "If the notice has a date and time, looks for genuinely overlapping calendar events"
+    },
+    {
+      "id": "70510d2e-200c-4909-b691-78a6c8eee53d",
+      "name": "Draft notification",
+      "nodeIds": [
+        "4c2b3ed2-b879-4d39-acba-813580bdf2b0",
+        "38bddf59-6aa7-4bf5-8562-36fe53859fbb",
+        "a32245e5-7e07-4a97-80fa-e76e92fa78a5"
+      ],
+      "description": "Adds a calendar event only when safe and authorized, then writes the student message and preview"
+    },
+    {
+      "id": "c5569b4f-cb88-4473-9d4a-be46bd4db59d",
+      "name": "Deliver and record",
+      "nodeIds": [
+        "ffb377ad-5828-4cf9-8acc-3f6a9de09211",
+        "97f050d1-6521-41bd-be63-154c163d646d",
+        "692e38dd-fa26-4d6e-9cb5-b95c590205ca",
+        "be8b853b-c998-4fdf-9a19-38e59db4f940",
+        "9f349334-cda6-499d-b07f-a6578fcb8794"
+      ],
+      "description": "Sends to the test address or the approved class, then logs the real outcome"
+    },
+    {
+      "id": "a3136647-8dbd-4978-8469-c2b9fd2b6b82",
+      "name": "Reject and log",
+      "nodeIds": [
+        "352d3ee1-c495-4ac4-99e1-3c7c9b64a4da",
+        "f07e03a2-a219-44c8-8805-8f18ffde19f6",
+        "23dcc142-90ea-4d91-80d6-0cc19717d12b"
+      ],
+      "description": "Invalid or unconfirmed submissions send nothing and are logged with the reason"
+    }
+  ],
+  "id": "kwxTaPoY1ZjMxJzV",
+  "tags": []
+}
